@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -256,6 +257,20 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4594e02f4f824dd088cd2aedf393f3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  target: {fileID: 1108058996}
+  offset: {x: 0, y: 3, z: 7}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -476,8 +491,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17f788cf57cdb4e5e883b3306db91f94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cat
-  minJumpForce: 5
-  maxJumpForce: 15
+  aimArrow: {fileID: 0}
+  aimSweepAngle: 60
+  aimSweepSpeed: 2
+  minVerticalJumpForce: 4
+  maxVerticalJumpForce: 9
+  minHorizontalJumpForce: 2
+  maxHorizontalJumpForce: 8
   maxChargeTime: 1.5
   groundCheckDistance: 0.15
   groundLayers:
@@ -506,6 +526,11 @@ CapsuleCollider:
   m_Height: 1.4
   m_Direction: 2
   m_Center: {x: 0, y: 0.50445944, z: 0}
+--- !u!4 &1108058996 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 9ba419dec7183184e960cb643e624d3e, type: 3}
+  m_PrefabInstance: {fileID: 1256963457}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1256963457
 PrefabInstance:
   m_ObjectHideFlags: 0
