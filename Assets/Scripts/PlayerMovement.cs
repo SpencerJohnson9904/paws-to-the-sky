@@ -4,16 +4,28 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] float minJumpForce = 5f;
-    [SerializeField] float maxJumpForce = 15f;
+    enum AimState { Aiming, Locked, Charging, Airborne }
+
+    [Header("Aim")]
+    [SerializeField] Transform aimArrow;
+    [SerializeField] float aimSweepAngle = 60f;
+    [SerializeField] float aimSweepSpeed = 2f;
+
+    [Header("Jump Power")]
+    [SerializeField] float minVerticalJumpForce = 4f;
+    [SerializeField] float maxVerticalJumpForce = 9f;
+    [SerializeField] float minHorizontalJumpForce = 2f;
+    [SerializeField] float maxHorizontalJumpForce = 8f;
     [SerializeField] float maxChargeTime = 1.5f;
 
+    [Header("Ground Check")]
     [SerializeField] float groundCheckDistance = 0.15f;
     [SerializeField] LayerMask groundLayers = ~0;
 
     Rigidbody rb;
+    AimState state = AimState.Aiming;
     float chargeTime;
-    bool isCharging;
+    bool leftGroundSinceJump;
 
     public float ChargeFraction => Mathf.Clamp01(chargeTime / maxChargeTime);
 
@@ -28,32 +40,67 @@ public class PlayerMovement : MonoBehaviour
         var space = Keyboard.current?.spaceKey;
         if (space == null) return;
 
-        if (space.wasPressedThisFrame && IsGrounded())
+        switch (state)
         {
-            isCharging = true;
-            chargeTime = 0f;
-        }
+            case AimState.Aiming:
+                UpdateArrowOscillation();
+                if (space.wasPressedThisFrame) state = AimState.Locked;
+                break;
 
-        if (isCharging)
-        {
-            chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
+            case AimState.Locked:
+                if (space.wasPressedThisFrame)
+                {
+                    state = AimState.Charging;
+                    chargeTime = 0f;
+                }
+                break;
 
-            if (space.wasReleasedThisFrame)
-            {
-                Jump(ChargeFraction);
-                isCharging = false;
-                chargeTime = 0f;
-            }
+            case AimState.Charging:
+                chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
+                if (space.wasReleasedThisFrame)
+                {
+                    Jump(ChargeFraction);
+                    state = AimState.Airborne;
+                    leftGroundSinceJump = false;
+                    chargeTime = 0f;
+                    if (aimArrow != null) aimArrow.gameObject.SetActive(false);
+                }
+                break;
+
+            case AimState.Airborne:
+                if (!IsGrounded())
+                {
+                    leftGroundSinceJump = true;
+                }
+                else if (leftGroundSinceJump)
+                {
+                    state = AimState.Aiming;
+                    if (aimArrow != null) aimArrow.gameObject.SetActive(true);
+                }
+                break;
         }
+    }
+
+    void UpdateArrowOscillation()
+    {
+        if (aimArrow == null) return;
+        float yaw = Mathf.Sin(Time.time * aimSweepSpeed) * aimSweepAngle;
+        aimArrow.localRotation = Quaternion.Euler(0f, yaw, 0f);
     }
 
     void Jump(float chargeFraction)
     {
-        float force = Mathf.Lerp(minJumpForce, maxJumpForce, chargeFraction);
+        float vertical = Mathf.Lerp(minVerticalJumpForce, maxVerticalJumpForce, chargeFraction);
+        float horizontal = Mathf.Lerp(minHorizontalJumpForce, maxHorizontalJumpForce, chargeFraction);
+
+        Vector3 dir = aimArrow != null ? aimArrow.forward : transform.forward;
+        dir.y = 0f;
+        dir = dir.sqrMagnitude > 0.0001f ? dir.normalized : transform.forward;
+
         var v = rb.linearVelocity;
         v.y = 0f;
         rb.linearVelocity = v;
-        rb.AddForce(Vector3.up * force, ForceMode.Impulse);
+        rb.AddForce(dir * horizontal + Vector3.up * vertical, ForceMode.Impulse);
     }
 
     bool IsGrounded()
