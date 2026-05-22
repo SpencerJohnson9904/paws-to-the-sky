@@ -7,8 +7,9 @@ public class CameraFollow : MonoBehaviour
 
     void LateUpdate()
     {
+        if (target == null) return;
         transform.position = target.position + offset;
-        transform.LookAt(target); 
+        transform.LookAt(target);
     }
 
 }

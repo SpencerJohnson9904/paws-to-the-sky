@@ -25,6 +25,7 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
     AimState state = AimState.Aiming;
     float chargeTime;
+    float currentYaw;
     bool leftGroundSinceJump;
 
     public float ChargeFraction => Mathf.Clamp01(chargeTime / maxChargeTime);
@@ -44,7 +45,12 @@ public class PlayerMovement : MonoBehaviour
         {
             case AimState.Aiming:
                 UpdateArrowOscillation();
-                if (space.wasPressedThisFrame) state = AimState.Locked;
+                if (space.wasPressedThisFrame)
+                {
+                    transform.Rotate(0f, currentYaw, 0f);
+                    if (aimArrow != null) aimArrow.localRotation = Quaternion.identity;
+                    state = AimState.Locked;
+                }
                 break;
 
             case AimState.Locked:
@@ -83,9 +89,8 @@ public class PlayerMovement : MonoBehaviour
 
     void UpdateArrowOscillation()
     {
-        if (aimArrow == null) return;
-        float yaw = Mathf.Sin(Time.time * aimSweepSpeed) * aimSweepAngle;
-        aimArrow.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        currentYaw = Mathf.Sin(Time.time * aimSweepSpeed) * aimSweepAngle;
+        if (aimArrow != null) aimArrow.localRotation = Quaternion.Euler(0f, currentYaw, 0f);
     }
 
     void Jump(float chargeFraction)
@@ -93,9 +98,9 @@ public class PlayerMovement : MonoBehaviour
         float vertical = Mathf.Lerp(minVerticalJumpForce, maxVerticalJumpForce, chargeFraction);
         float horizontal = Mathf.Lerp(minHorizontalJumpForce, maxHorizontalJumpForce, chargeFraction);
 
-        Vector3 dir = aimArrow != null ? aimArrow.forward : transform.forward;
+        Vector3 dir = transform.forward;
         dir.y = 0f;
-        dir = dir.sqrMagnitude > 0.0001f ? dir.normalized : transform.forward;
+        dir = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.forward;
 
         var v = rb.linearVelocity;
         v.y = 0f;
