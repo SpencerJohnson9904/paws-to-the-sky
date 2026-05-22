@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Aim")]
     [SerializeField] Transform aimArrow;
+    [SerializeField] Transform visualModel;
     [SerializeField] float aimSweepAngle = 60f;
     [SerializeField] float aimSweepSpeed = 2f;
 
@@ -98,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
         float vertical = Mathf.Lerp(minVerticalJumpForce, maxVerticalJumpForce, chargeFraction);
         float horizontal = Mathf.Lerp(minHorizontalJumpForce, maxHorizontalJumpForce, chargeFraction);
 
-        Vector3 dir = transform.forward;
+        Vector3 dir = visualModel != null ? visualModel.forward : transform.forward;
         dir.y = 0f;
         dir = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.forward;
 
