@@ -19,15 +19,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float maxHorizontalJumpForce = 8f;
     [SerializeField] float maxChargeTime = 1.5f;
 
-    [Header("Ground Check")]
-    [SerializeField] float groundCheckDistance = 0.15f;
-    [SerializeField] LayerMask groundLayers = ~0;
-
     Rigidbody rb;
     AimState state = AimState.Aiming;
     float chargeTime;
     float currentYaw;
     bool leftGroundSinceJump;
+    bool grounded;
 
     public float ChargeFraction => Mathf.Clamp01(chargeTime / maxChargeTime);
 
@@ -35,6 +32,13 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        // The aim arrow is a visual indicator. Its child meshes ship with
+        // colliders that, as children of this Rigidbody, would otherwise fold
+        // into the cat's compound collider and ram nearby geometry as it sweeps.
+        if (aimArrow != null)
+            foreach (var col in aimArrow.GetComponentsInChildren<Collider>(true))
+                col.enabled = false;
     }
 
     void Update()
@@ -75,7 +79,7 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case AimState.Airborne:
-                if (!IsGrounded())
+                if (!grounded)
                 {
                     leftGroundSinceJump = true;
                 }
@@ -109,14 +113,21 @@ public class PlayerMovement : MonoBehaviour
         rb.AddForce(dir * horizontal + Vector3.up * vertical, ForceMode.Impulse);
     }
 
-    bool IsGrounded()
+    void FixedUpdate()
     {
-        return Physics.Raycast(
-            transform.position + Vector3.up * 0.05f,
-            Vector3.down,
-            groundCheckDistance + 0.05f,
-            groundLayers,
-            QueryTriggerInteraction.Ignore);
+        grounded = false;
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        foreach (var contact in collision.contacts)
+        {
+            if (contact.normal.y > 0.5f)
+            {
+                grounded = true;
+                return;
+            }
+        }
     }
 
     /// <summary>
