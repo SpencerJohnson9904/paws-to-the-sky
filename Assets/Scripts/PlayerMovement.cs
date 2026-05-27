@@ -118,4 +118,20 @@ public class PlayerMovement : MonoBehaviour
             groundLayers,
             QueryTriggerInteraction.Ignore);
     }
+
+    /// <summary>
+    /// Called by CheckpointManager after a respawn so the player can aim immediately.
+    /// </summary>
+    public void ResetState()
+    {
+        state = AimState.Aiming;
+        chargeTime = 0f;
+        leftGroundSinceJump = false;
+        currentYaw = 0f;
+        if (aimArrow != null)
+        {
+            aimArrow.gameObject.SetActive(true);
+            aimArrow.localRotation = Quaternion.identity;
+        }
+    }
 }
