@@ -6,10 +6,12 @@ public class cameraFollow : MonoBehaviour
     public float distance = 5f;
     public float height = 2f;
     public float smoothSpeed = 5f;
+    public float tiltAngle = 10f;
 
     void LateUpdate()
 {
     Quaternion targetRotation = Quaternion.LookRotation(cat.forward);
+    targetRotation *= Quaternion.Euler(tiltAngle, 0, 0);
     transform.rotation = Quaternion.Slerp(
         transform.rotation,
         targetRotation,

@@ -338,8 +338,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   cat: {fileID: 1108058996}
   distance: 5
-  height: 2
+  height: 3
   smoothSpeed: 5
+  tiltAngle: 30
 --- !u!4 &365506174 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7598010778777186093, guid: 696054cd3122fd4408591593623f7f19, type: 3}
