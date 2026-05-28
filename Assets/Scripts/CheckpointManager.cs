@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Singleton that tracks the current checkpoint respawn position and
@@ -69,6 +70,9 @@ public class CheckpointManager : MonoBehaviour
     void Update()
     {
         if (player == null || isRespawning) return;
+
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+            Respawn();
 
         // Respawn when the player falls below (last checkpoint Y - buffer)
         if (player.position.y < checkpointY - fallBuffer)
