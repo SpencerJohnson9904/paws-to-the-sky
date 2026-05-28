@@ -1090,8 +1090,8 @@ MonoBehaviour:
   aimArrow: {fileID: 925607648}
   visualModel: {fileID: 1361568204}
   aimSweepAngle: 180
-  aimSweepSpeed: 2
-  minVerticalJumpForce: 2
+  aimSweepSpeed: 1
+  minVerticalJumpForce: 3
   maxVerticalJumpForce: 9
   minHorizontalJumpForce: 2
   maxHorizontalJumpForce: 8
@@ -1355,6 +1355,11 @@ MonoBehaviour:
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
+--- !u!4 &1458787470 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
+  m_PrefabInstance: {fileID: 1560798086}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1480764692
 GameObject:
   m_ObjectHideFlags: 0
@@ -1531,19 +1536,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 1882229589}
     m_Modifications:
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.4285715
+      objectReference: {fileID: 0}
+    - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.071
+      value: 6.78
       objectReference: {fileID: 0}
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.3399997
+      value: 6.14
       objectReference: {fileID: 0}
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.056
+      value: 7.163
       objectReference: {fileID: 0}
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1551,15 +1568,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 3150913133528022724, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1575,7 +1592,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_Name
-      value: ButtonBase
+      value: CheckPoint1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1746,6 +1763,7 @@ Transform:
   - {fileID: 1446422976}
   - {fileID: 416232076}
   - {fileID: 365506174}
+  - {fileID: 1458787470}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1884033477
@@ -2099,4 +2117,3 @@ SceneRoots:
   - {fileID: 1882229589}
   - {fileID: 1315144262}
   - {fileID: 2062989398}
-  - {fileID: 1560798086}
