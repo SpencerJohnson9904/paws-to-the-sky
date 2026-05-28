@@ -1645,7 +1645,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cat
   aimArrow: {fileID: 925607648}
-  visualModel: {fileID: 1361568204}
+  visualModel: {fileID: 1108058996}
   aimSweepAngle: 180
   aimSweepSpeed: 1
   minVerticalJumpForce: 3
@@ -1653,6 +1653,8 @@ MonoBehaviour:
   minHorizontalJumpForce: 2
   maxHorizontalJumpForce: 8
   maxChargeTime: 1.5
+  squishAmount: 0.6
+  squishSpeed: 5
 --- !u!136 &1108058995
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1878,11 +1880,6 @@ Transform:
 Transform:
   m_CorrespondingSourceObject: {fileID: 7598010778777186093, guid: 696054cd3122fd4408591593623f7f19, type: 3}
   m_PrefabInstance: {fileID: 1884033477}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1361568204 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6300194720532023788, guid: 9ba419dec7183184e960cb643e624d3e, type: 3}
-  m_PrefabInstance: {fileID: 1256963457}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1446422976 stripped
 Transform:
