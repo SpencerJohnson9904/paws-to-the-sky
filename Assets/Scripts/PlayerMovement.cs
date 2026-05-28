@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
@@ -19,15 +20,26 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float maxHorizontalJumpForce = 8f;
     [SerializeField] float maxChargeTime = 1.5f;
 
+    [Header("Squish")]
+    [SerializeField] float squishAmount = 0.6f;
+    [SerializeField] float squishSpeed = 5f;
+
     Rigidbody rb;
     AimState state = AimState.Aiming;
     float chargeTime;
     float currentYaw;
     bool leftGroundSinceJump;
     bool grounded;
+    Vector3 originalScale;
 
     public float ChargeFraction => Mathf.Clamp01(chargeTime / maxChargeTime);
 
+    //debug
+    void Start()
+    {
+        originalScale = visualModel != null ? visualModel.localScale : transform.localScale;
+        Debug.Log("Original Scale: " + originalScale);
+    }
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -63,6 +75,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     state = AimState.Charging;
                     chargeTime = 0f;
+                    StartSquish();
                 }
                 break;
 
@@ -70,6 +83,7 @@ public class PlayerMovement : MonoBehaviour
                 chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
                 if (space.wasReleasedThisFrame)
                 {
+                    StopSquish();
                     Jump(ChargeFraction);
                     state = AimState.Airborne;
                     leftGroundSinceJump = false;
@@ -112,6 +126,55 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity = v;
         rb.AddForce(dir * horizontal + Vector3.up * vertical, ForceMode.Impulse);
     }
+
+
+    //Squish animation
+    void StartSquish()
+    {
+        StopAllCoroutines();
+        StartCoroutine(SquishRoutine());
+    }
+
+    void StopSquish()
+    {
+        StopAllCoroutines();
+        StartCoroutine(SpringBack());
+    }
+
+    IEnumerator SquishRoutine()
+    {
+
+        Transform t = visualModel != null ? visualModel : transform;
+
+        while (true)
+        {
+            float squish = Mathf.Lerp(1f, squishAmount, ChargeFraction);
+            Vector3 target = new Vector3(
+                originalScale.x * Mathf.Lerp(1f, 1.1f, ChargeFraction), // barely widens
+                originalScale.y * squish,                                  // slightly squishes down
+                originalScale.z * Mathf.Lerp(1f, 1.1f, ChargeFraction)
+            );
+
+            t.localScale = Vector3.Lerp(t.localScale, target, Time.deltaTime * squishSpeed);
+            yield return null;
+        }
+
+    }
+    IEnumerator SpringBack()
+    {
+        Transform t = visualModel != null ? visualModel : transform;
+
+        while (Vector3.Distance(t.localScale, originalScale) > 0.01f)
+        {
+            t.localScale = Vector3.Lerp(t.localScale, originalScale, Time.deltaTime * squishSpeed * 2f);
+            yield return null;
+        }
+        t.localScale = originalScale;
+    }
+
+
+
+
 
     void FixedUpdate()
     {
