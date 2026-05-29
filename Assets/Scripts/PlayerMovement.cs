@@ -21,8 +21,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float maxChargeTime = 1.5f;
 
     [Header("Squish")]
-    [SerializeField] float squishAmount = 0.6f;
-    [SerializeField] float squishSpeed = 5f;
+    [SerializeField] Transform squishTarget;
+    [SerializeField] float squishAmount = 0.3f;
+    [SerializeField] float squishSpeed = 8f;
 
     Rigidbody rb;
     AimState state = AimState.Aiming;
@@ -30,15 +31,15 @@ public class PlayerMovement : MonoBehaviour
     float currentYaw;
     bool leftGroundSinceJump;
     bool grounded;
-    Vector3 originalScale;
+    Vector3 squishOriginalScale;
 
     public float ChargeFraction => Mathf.Clamp01(chargeTime / maxChargeTime);
 
     //debug
     void Start()
     {
-        originalScale = visualModel != null ? visualModel.localScale : transform.localScale;
-        Debug.Log("Original Scale: " + originalScale);
+        if (squishTarget != null)
+            squishOriginalScale = squishTarget.localScale;
     }
     void Awake()
     {
@@ -61,6 +62,7 @@ public class PlayerMovement : MonoBehaviour
         switch (state)
         {
             case AimState.Aiming:
+                ResetSquish();
                 UpdateArrowOscillation();
                 if (space.wasPressedThisFrame)
                 {
@@ -75,15 +77,15 @@ public class PlayerMovement : MonoBehaviour
                 {
                     state = AimState.Charging;
                     chargeTime = 0f;
-                    StartSquish();
                 }
                 break;
 
             case AimState.Charging:
+                UpdateSquish();
                 chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
                 if (space.wasReleasedThisFrame)
                 {
-                    StopSquish();
+                    StopAllCoroutines();
                     Jump(ChargeFraction);
                     state = AimState.Airborne;
                     leftGroundSinceJump = false;
@@ -100,6 +102,7 @@ public class PlayerMovement : MonoBehaviour
                 else if (leftGroundSinceJump)
                 {
                     state = AimState.Aiming;
+                    ResetSquish();
                     if (aimArrow != null) aimArrow.gameObject.SetActive(true);
                 }
                 break;
@@ -129,49 +132,28 @@ public class PlayerMovement : MonoBehaviour
 
 
     //Squish animation
-    void StartSquish()
+    void UpdateSquish()
     {
-        StopAllCoroutines();
-        StartCoroutine(SquishRoutine());
+        if (squishTarget == null) { Debug.Log("squishTarget is null!"); return; }
+        Debug.Log("UpdateSquish called, ChargeFraction: " + ChargeFraction);
+        if (squishTarget == null) return;
+
+        Vector3 targetScale = Vector3.Lerp(
+            squishOriginalScale,
+            new Vector3(squishOriginalScale.x * (1f + squishAmount),
+                        squishOriginalScale.y * (1f - squishAmount),
+                        squishOriginalScale.z * (1f + squishAmount)),
+            ChargeFraction
+        );
+
+        squishTarget.localScale = Vector3.Lerp(squishTarget.localScale, targetScale, Time.deltaTime * squishSpeed);
     }
 
-    void StopSquish()
+    void ResetSquish()
     {
-        StopAllCoroutines();
-        StartCoroutine(SpringBack());
+        if (squishTarget == null) return;
+        squishTarget.localScale = Vector3.Lerp(squishTarget.localScale, squishOriginalScale, Time.deltaTime * squishSpeed * 2f);
     }
-
-    IEnumerator SquishRoutine()
-    {
-
-        Transform t = visualModel != null ? visualModel : transform;
-
-        while (true)
-        {
-            float squish = Mathf.Lerp(1f, squishAmount, ChargeFraction);
-            Vector3 target = new Vector3(
-                originalScale.x * Mathf.Lerp(1f, 1.1f, ChargeFraction), // barely widens
-                originalScale.y * squish,                                  // slightly squishes down
-                originalScale.z * Mathf.Lerp(1f, 1.1f, ChargeFraction)
-            );
-
-            t.localScale = Vector3.Lerp(t.localScale, target, Time.deltaTime * squishSpeed);
-            yield return null;
-        }
-
-    }
-    IEnumerator SpringBack()
-    {
-        Transform t = visualModel != null ? visualModel : transform;
-
-        while (Vector3.Distance(t.localScale, originalScale) > 0.01f)
-        {
-            t.localScale = Vector3.Lerp(t.localScale, originalScale, Time.deltaTime * squishSpeed * 2f);
-            yield return null;
-        }
-        t.localScale = originalScale;
-    }
-
 
 
 
