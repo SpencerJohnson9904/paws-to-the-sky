@@ -16,12 +16,16 @@ public static class DemoClimbBuilder
 {
     const string Root = "LevelBlocks";
 
+    // Flat grass slabs (height ≤ 0.5) — the "flat platforms" we want to land on.
     static readonly string[] BlockPrefabs =
     {
-        "Assets/Grass/Prefabs/Complex/Base_10.prefab",
-        "Assets/Grass/Prefabs/Complex/Base_3.prefab",
-        "Assets/Grass/Prefabs/Complex/Base_9.prefab",
+        "Assets/Grass/Prefabs/Top/Top.prefab",
+        "Assets/Grass/Prefabs/Top/Top_2.prefab",
+        "Assets/Grass/Prefabs/Top/Top_10.prefab",
     };
+
+    // Flat checkpoint platform with a button (matches the existing CheckPoint1).
+    const string CheckpointPrefab = "Assets/Grass/Prefabs/Props/ButtonBase.prefab";
 
     // Biome bands applied bottom→top. Each is (body material, top material).
     static readonly (string body, string top)[] Biomes =
@@ -50,21 +54,6 @@ public static class DemoClimbBuilder
         // Fresh start
         Clear();
 
-        var go = new GameObject(Root);
-        Undo.RegisterCreatedObjectUndo(go, "Build Demo Climb");
-        var gen = go.AddComponent<LevelBlockGenerator>();
-
-        // Anchor the ring on the existing summit (the checkpoint platform), NOT on the
-        // tallest collider — tree meshes are taller and would pull the ring off over them.
-        // Centre horizontally on the checkpoint; start just ABOVE the existing top
-        // platform (its surface is ~6.1) so the ring continues the climb cleanly
-        // instead of overlapping the current summit.
-        var cp = Object.FindObjectsByType<CheckpointTrigger>(FindObjectsSortMode.None).FirstOrDefault();
-        Vector3 c = cp != null ? cp.transform.position : new Vector3(8.6f, 0f, 2.9f);
-        var anchor = new GameObject("ClimbAnchor");
-        anchor.transform.SetParent(go.transform);
-        anchor.transform.position = new Vector3(c.x, 6.6f, c.z);
-
         var prefabs = BlockPrefabs
             .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
             .Where(p => p != null).ToArray();
@@ -75,20 +64,44 @@ public static class DemoClimbBuilder
             return;
         }
 
+        // The existing platforms are children of "Grass Level" (scale 2, 0.7, 2). Parent
+        // our ring there too and work in that LOCAL space, so the new blocks inherit the
+        // exact same scaling/spacing as the hand-placed ones.
+        var grass = GameObject.Find("Grass Level");
+        Transform space = grass != null ? grass.transform : null;
+
+        var go = new GameObject(Root);
+        Undo.RegisterCreatedObjectUndo(go, "Build Demo Climb");
+        if (space != null) go.transform.SetParent(space, false);
+
+        // Fit the circle the existing platforms revolve around, in Grass-Level local space.
+        var (localCenter, fitRadius, topY) = FitSpiralCircle(space, go);
+
+        // Place the generator object at the ring centre, just above the current top platform.
+        go.transform.localPosition = new Vector3(localCenter.x, topY + 0.6f, localCenter.z);
+        go.transform.localRotation = Quaternion.identity;
+        go.transform.localScale = Vector3.one;
+        Debug.Log($"[DemoClimbBuilder] Fitted local center ({localCenter.x:F2}, {localCenter.z:F2}) " +
+                  $"radius {fitRadius:F2}, top platform Y {topY:F2}.");
+
+        var gen = go.AddComponent<LevelBlockGenerator>();
+
         // Configure the generator's private serialized fields the proper way.
         var so = new SerializedObject(gen);
         var arr = so.FindProperty("blockPrefabs");
         arr.arraySize = prefabs.Length;
         for (int i = 0; i < prefabs.Length; i++)
             arr.GetArrayElementAtIndex(i).objectReferenceValue = prefabs[i];
-        // Match the existing level: a gentle ring, not a steep tower.
+        // Match the existing level's helix function (measured from the current spiral):
+        // ~30° rotation and ~0.47m rise per platform, radius from the circle fit.
         so.FindProperty("blockCount").intValue = 14;
-        so.FindProperty("circleRadius").floatValue = 4f;
-        so.FindProperty("angleStep").floatValue = 70f;
-        so.FindProperty("verticalStep").floatValue = 0.6f;
+        so.FindProperty("circleRadius").floatValue = fitRadius;
+        so.FindProperty("angleStep").floatValue = 30f;
+        so.FindProperty("verticalStep").floatValue = 0.47f;
+        so.FindProperty("blockScale").floatValue = 3f;   // flat Top prefabs are 1×1 native
         so.FindProperty("checkpointEvery").intValue = 4;
-        so.FindProperty("startFrom").objectReferenceValue = anchor.transform;
-        so.FindProperty("startFromHighestPlatform").boolValue = false;
+        var cpProp = so.FindProperty("checkpointPrefab");
+        if (cpProp != null) cpProp.objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(CheckpointPrefab);
         so.ApplyModifiedPropertiesWithoutUndo();
 
         gen.Generate();
@@ -110,6 +123,68 @@ public static class DemoClimbBuilder
             Undo.DestroyObjectImmediate(existing);
             EditorSceneManager.MarkSceneDirty(existing.scene);
         }
+    }
+
+    /// <summary>
+    /// Finds the circle the existing platforms revolve around — a least-squares
+    /// (Kåsa) fit over the platform instances' X/Z, ignoring trees/rocks/cars and
+    /// anything under our own root. Returns the fitted centre and radius.
+    /// </summary>
+    static (Vector3 center, float radius, float topY) FitSpiralCircle(Transform space, GameObject ourRoot)
+    {
+        var pts = new List<Vector2>();
+        float topY = 0f;
+        foreach (var root in ourRoot.scene.GetRootGameObjects())
+        {
+            foreach (var t in root.GetComponentsInChildren<Transform>())
+            {
+                var inst = t.gameObject;
+                if (!PrefabUtility.IsAnyPrefabInstanceRoot(inst)) continue;
+                if (inst.transform.IsChildOf(ourRoot.transform)) continue;
+
+                var src = PrefabUtility.GetCorrespondingObjectFromSource(inst);
+                if (src == null) continue;
+                string path = AssetDatabase.GetAssetPath(src);
+                if (path.Contains("/Complex/") || path.Contains("/Top/") || path.Contains("ButtonBase"))
+                {
+                    // Express each platform in the chosen local space so the fit matches
+                    // the coordinates the generator will place blocks in.
+                    Vector3 local = space != null ? space.InverseTransformPoint(t.position) : t.position;
+                    pts.Add(new Vector2(local.x, local.z));
+                    if (local.y > topY) topY = local.y;
+                }
+            }
+        }
+        var (c, r) = Fit(pts);
+        return (c, r, topY);
+    }
+
+    /// <summary>Kåsa least-squares circle fit. Falls back to centroid if degenerate.</summary>
+    static (Vector3 center, float radius) Fit(List<Vector2> pts)
+    {
+        int n = pts.Count;
+        Vector2 mean = Vector2.zero;
+        foreach (var p in pts) mean += p;
+        if (n == 0) return (new Vector3(7.64f, 0f, 2.52f), 4.5f);
+        mean /= n;
+
+        double Suu = 0, Svv = 0, Suv = 0, Suuu = 0, Svvv = 0, Suvv = 0, Svuu = 0;
+        foreach (var p in pts)
+        {
+            double u = p.x - mean.x, v = p.y - mean.y;
+            Suu += u * u; Svv += v * v; Suv += u * v;
+            Suuu += u * u * u; Svvv += v * v * v; Suvv += u * v * v; Svuu += v * u * u;
+        }
+        double A = Suu, B = Suv, C = Svv;
+        double D = 0.5 * (Suuu + Suvv), E = 0.5 * (Svvv + Svuu);
+        double det = A * C - B * B;
+        if (n < 3 || System.Math.Abs(det) < 1e-6)
+            return (new Vector3(mean.x, 0f, mean.y), 4.5f);   // centroid fallback
+
+        double uc = (D * C - B * E) / det, vc = (A * E - B * D) / det;
+        float cx = (float)(mean.x + uc), cz = (float)(mean.y + vc);
+        float r = (float)System.Math.Sqrt(uc * uc + vc * vc + (Suu + Svv) / n);
+        return (new Vector3(cx, 0f, cz), r);
     }
 
     /// <summary>Recolor the generated blocks into vertical biome bands.</summary>

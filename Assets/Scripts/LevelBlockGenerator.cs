@@ -56,9 +56,13 @@ public class LevelBlockGenerator : MonoBehaviour
     [SerializeField] float blockScale = 1f;
 
     [Header("Checkpoints")]
-    [Tooltip("Attach a CheckpointTrigger to every Nth block so falls don't reset the " +
-             "whole climb. 0 = no checkpoints.")]
+    [Tooltip("Every Nth block becomes a checkpoint (gets a CheckpointTrigger). 0 = none.")]
     [SerializeField] int checkpointEvery = 3;
+
+    [Tooltip("Prefab used for checkpoint blocks — e.g. Grass/Prefabs/Props/ButtonBase " +
+             "(the flat platform with a button). Leave empty to reuse a normal block " +
+             "with just the trigger added.")]
+    [SerializeField] GameObject checkpointPrefab;
 
     [Header("Coins (optional)")]
     [Tooltip("Optional collectible prefab (e.g. Grass/Prefabs/Props/Coin) floated above " +
@@ -68,14 +72,10 @@ public class LevelBlockGenerator : MonoBehaviour
     [Tooltip("Height above each block to float the coin.")]
     [SerializeField] float coinHeight = 1.2f;
 
-    [Header("Start")]
-    [Tooltip("First block is placed one step beyond this point. Leave empty to start " +
-             "from this generator's own position (or the auto-detected summit below).")]
-    [SerializeField] Transform startFrom;
-
-    [Tooltip("If true and no Start From is set, the chain begins above the HIGHEST " +
-             "collider already in the scene — so it always connects to the current level top.")]
-    [SerializeField] bool startFromHighestPlatform = true;
+    // Blocks are placed in this object's LOCAL space, around its own origin. Position
+    // (and parent) this GameObject at the centre of the ring you want — if it's a child
+    // of a scaled container (like "Grass Level"), the blocks inherit that scale too, so
+    // they match the existing platforms exactly.
 
     [Header("Safety")]
     [Tooltip("If a spawned block has no collider, add a MeshCollider so the player can " +
@@ -100,32 +100,35 @@ public class LevelBlockGenerator : MonoBehaviour
             return;
         }
 
-        // Centre the circle on the current summit so the new ring winds around the
-        // existing climb rather than rocketing straight up from one edge.
-        Vector3 center = ResolveStart();
-        float startY = center.y;
+        // All positions are LOCAL to this object: the helix winds around its origin.
         var rng = new System.Random(seed);
 
         for (int i = 0; i < blockCount; i++)
         {
             float angle = (i * angleStep) * Mathf.Deg2Rad;
             float r = circleRadius + (float)(rng.NextDouble() * 2.0 - 1.0) * jitter;
-            Vector3 pos = new Vector3(
-                center.x + Mathf.Cos(angle) * r,
-                startY + verticalStep * (i + 1) + (float)(rng.NextDouble() * 2.0 - 1.0) * jitter * 0.5f,
-                center.z + Mathf.Sin(angle) * r);
+            Vector3 localPos = new Vector3(
+                Mathf.Cos(angle) * r,
+                verticalStep * (i + 1) + (float)(rng.NextDouble() * 2.0 - 1.0) * jitter * 0.5f,
+                Mathf.Sin(angle) * r);
 
-            GameObject prefab = blockPrefabs[rng.Next(blockPrefabs.Length)];
+            bool isCheckpoint = checkpointEvery > 0 && (i + 1) % checkpointEvery == 0;
+
+            GameObject prefab = isCheckpoint && checkpointPrefab != null
+                ? checkpointPrefab
+                : blockPrefabs[rng.Next(blockPrefabs.Length)];
             if (prefab == null) continue;
 
             Quaternion rot = randomYRotation
                 ? Quaternion.Euler(0f, rng.Next(4) * 90f, 0f)
                 : Quaternion.identity;
 
-            GameObject block = InstantiateBlock(prefab, pos, rot);
-            block.transform.SetParent(transform, true);
+            GameObject block = InstantiateBlock(prefab);
+            block.transform.SetParent(transform, false);   // adopt parent's (scaled) space
+            block.transform.localPosition = localPos;
+            block.transform.localRotation = rot;
             block.transform.localScale = Vector3.one * blockScale;
-            block.name = $"Block_{i:000}";
+            block.name = isCheckpoint ? $"Checkpoint_{i:000}" : $"Block_{i:000}";
 
             if (ensureCollider && block.GetComponentInChildren<Collider>() == null)
             {
@@ -134,15 +137,16 @@ public class LevelBlockGenerator : MonoBehaviour
                 else block.AddComponent<BoxCollider>();
             }
 
-            if (checkpointEvery > 0 && (i + 1) % checkpointEvery == 0)
+            if (isCheckpoint && block.GetComponent<CheckpointTrigger>() == null)
                 block.AddComponent<CheckpointTrigger>();
 
             spawned.Add(block);
 
             if (coinPrefab != null)
             {
-                GameObject coin = InstantiateBlock(coinPrefab, pos + Vector3.up * coinHeight, Quaternion.identity);
-                coin.transform.SetParent(transform, true);
+                GameObject coin = InstantiateBlock(coinPrefab);
+                coin.transform.SetParent(transform, false);
+                coin.transform.localPosition = localPos + Vector3.up * coinHeight;
                 coin.name = $"Coin_{i:000}";
                 spawned.Add(coin);
             }
@@ -163,53 +167,18 @@ public class LevelBlockGenerator : MonoBehaviour
         spawned.Clear();
     }
 
-    /// <summary>
-    /// Decides where the chain begins: an explicit Start From wins; otherwise, if
-    /// enabled, the top of the highest collider already in the scene (the current
-    /// level summit); otherwise this object's own position.
-    /// </summary>
-    Vector3 ResolveStart()
-    {
-        if (startFrom != null) return startFrom.position;
-
-        if (startFromHighestPlatform)
-        {
-            float bestY = float.NegativeInfinity;
-            Vector3 best = transform.position;
-            foreach (var col in FindObjectsByType<Collider>(FindObjectsSortMode.None))
-            {
-                if (col.isTrigger) continue;                      // ignore checkpoint zones
-                if (col.GetComponentInParent<PlayerMovement>() != null) continue;  // ignore the cat
-                if (IsOurChild(col.transform)) continue;          // ignore blocks we already made
-                float topY = col.bounds.max.y;
-                if (topY > bestY) { bestY = topY; best = new Vector3(col.bounds.center.x, topY, col.bounds.center.z); }
-            }
-            if (!float.IsNegativeInfinity(bestY)) return best;
-        }
-
-        return transform.position;
-    }
-
-    bool IsOurChild(Transform t)
-    {
-        for (var p = t; p != null; p = p.parent)
-            if (p == transform) return true;
-        return false;
-    }
-
-    GameObject InstantiateBlock(GameObject prefab, Vector3 position, Quaternion rotation)
+    GameObject InstantiateBlock(GameObject prefab)
     {
 #if UNITY_EDITOR
         if (!Application.isPlaying)
         {
             // Keep the prefab connection so the blocks stay linked to their source asset.
             var go = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab);
-            go.transform.SetPositionAndRotation(position, rotation);
             UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Generate Block");
             return go;
         }
 #endif
-        return Instantiate(prefab, position, rotation);
+        return Instantiate(prefab);
     }
 
     void DestroyBlock(GameObject go)
