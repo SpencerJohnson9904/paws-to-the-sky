@@ -16,16 +16,19 @@ public static class DemoClimbBuilder
 {
     const string Root = "LevelBlocks";
 
-    // Flat grass slabs (height ≤ 0.5) — the "flat platforms" we want to land on.
+    // The exact platform prefabs the existing spiral already uses (Complex bases, scale 1).
     static readonly string[] BlockPrefabs =
     {
-        "Assets/Grass/Prefabs/Top/Top.prefab",
-        "Assets/Grass/Prefabs/Top/Top_2.prefab",
-        "Assets/Grass/Prefabs/Top/Top_10.prefab",
+        "Assets/Grass/Prefabs/Complex/Base.prefab",
+        "Assets/Grass/Prefabs/Complex/Base_3.prefab",
+        "Assets/Grass/Prefabs/Complex/Base_4.prefab",
+        "Assets/Grass/Prefabs/Complex/Base_9.prefab",
+        "Assets/Grass/Prefabs/Complex/Base_10.prefab",
     };
 
-    // Flat checkpoint platform with a button (matches the existing CheckPoint1).
+    // Checkpoint platform with a button — same prefab/scale as the existing CheckPoint1.
     const string CheckpointPrefab = "Assets/Grass/Prefabs/Props/ButtonBase.prefab";
+    const float CheckpointScale = 0.5f;
 
     // Biome bands applied bottom→top. Each is (body material, top material).
     static readonly (string body, string top)[] Biomes =
@@ -77,12 +80,25 @@ public static class DemoClimbBuilder
         // Fit the circle the existing platforms revolve around, in Grass-Level local space.
         var (localCenter, fitRadius, topY) = FitSpiralCircle(space, go);
 
-        // Place the generator object at the ring centre, just above the current top platform.
-        go.transform.localPosition = new Vector3(localCenter.x, topY + 0.6f, localCenter.z);
+        // Find the existing checkpoint and CONTINUE the spiral from it: its angle around
+        // the circle and its height become the starting point for the new platforms.
+        const float angleStep = 30f, verticalStep = 0.47f;
+        float startAngle = 0f, baseY = topY;
+        var cp = Object.FindObjectsByType<CheckpointTrigger>(FindObjectsSortMode.None).FirstOrDefault();
+        if (cp != null)
+        {
+            Vector3 cpLocal = space != null ? space.InverseTransformPoint(cp.transform.position) : cp.transform.position;
+            startAngle = Mathf.Atan2(cpLocal.z - localCenter.z, cpLocal.x - localCenter.x) * Mathf.Rad2Deg + angleStep;
+            baseY = cpLocal.y;
+        }
+
+        // Place the generator object AT the ring centre, at the checkpoint's height, so the
+        // first new platform sits one step beyond the checkpoint along the same spiral.
+        go.transform.localPosition = new Vector3(localCenter.x, baseY, localCenter.z);
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
-        Debug.Log($"[DemoClimbBuilder] Fitted local center ({localCenter.x:F2}, {localCenter.z:F2}) " +
-                  $"radius {fitRadius:F2}, top platform Y {topY:F2}.");
+        Debug.Log($"[DemoClimbBuilder] center ({localCenter.x:F2},{localCenter.z:F2}) radius {fitRadius:F2}, " +
+                  $"continuing spiral from {startAngle - angleStep:F0}° at Y {baseY:F2}.");
 
         var gen = go.AddComponent<LevelBlockGenerator>();
 
@@ -92,14 +108,16 @@ public static class DemoClimbBuilder
         arr.arraySize = prefabs.Length;
         for (int i = 0; i < prefabs.Length; i++)
             arr.GetArrayElementAtIndex(i).objectReferenceValue = prefabs[i];
-        // Match the existing level's helix function (measured from the current spiral):
-        // ~30° rotation and ~0.47m rise per platform, radius from the circle fit.
+        // Reuse the existing spiral's exact function: same radius, ~30°/0.47m per step,
+        // existing prefabs at scale 1, ButtonBase checkpoints at 0.5 — nothing invented.
         so.FindProperty("blockCount").intValue = 14;
         so.FindProperty("circleRadius").floatValue = fitRadius;
-        so.FindProperty("angleStep").floatValue = 30f;
-        so.FindProperty("verticalStep").floatValue = 0.47f;
-        so.FindProperty("blockScale").floatValue = 3f;   // flat Top prefabs are 1×1 native
+        so.FindProperty("angleStep").floatValue = angleStep;
+        so.FindProperty("startAngle").floatValue = startAngle;
+        so.FindProperty("verticalStep").floatValue = verticalStep;
+        so.FindProperty("blockScale").floatValue = 1f;   // existing platforms are scale 1
         so.FindProperty("checkpointEvery").intValue = 4;
+        so.FindProperty("checkpointScale").floatValue = CheckpointScale;
         var cpProp = so.FindProperty("checkpointPrefab");
         if (cpProp != null) cpProp.objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(CheckpointPrefab);
         so.ApplyModifiedPropertiesWithoutUndo();

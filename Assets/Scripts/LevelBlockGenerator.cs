@@ -37,8 +37,12 @@ public class LevelBlockGenerator : MonoBehaviour
              "~4). The chain spirals around this circle rather than shooting straight up.")]
     [SerializeField] float circleRadius = 4f;
 
-    [Tooltip("Degrees travelled around the circle per block. ~70 gives ~5 blocks per loop.")]
+    [Tooltip("Degrees travelled around the circle per block. ~30 matches the existing spiral.")]
     [SerializeField] float angleStep = 70f;
+
+    [Tooltip("Angle (degrees) of the FIRST block around the circle. Set this to continue " +
+             "an existing spiral from where it left off.")]
+    [SerializeField] float startAngle = 0f;
 
     [Tooltip("Vertical rise per block. The existing platforms step up only ~0.5 each, so " +
              "keep this small for a gentle, walkable climb (not a steep tower).")]
@@ -63,6 +67,9 @@ public class LevelBlockGenerator : MonoBehaviour
              "(the flat platform with a button). Leave empty to reuse a normal block " +
              "with just the trigger added.")]
     [SerializeField] GameObject checkpointPrefab;
+
+    [Tooltip("Scale applied to checkpoint blocks (the existing ButtonBase uses 0.5).")]
+    [SerializeField] float checkpointScale = 1f;
 
     [Header("Coins (optional)")]
     [Tooltip("Optional collectible prefab (e.g. Grass/Prefabs/Props/Coin) floated above " +
@@ -105,7 +112,7 @@ public class LevelBlockGenerator : MonoBehaviour
 
         for (int i = 0; i < blockCount; i++)
         {
-            float angle = (i * angleStep) * Mathf.Deg2Rad;
+            float angle = (startAngle + i * angleStep) * Mathf.Deg2Rad;
             float r = circleRadius + (float)(rng.NextDouble() * 2.0 - 1.0) * jitter;
             Vector3 localPos = new Vector3(
                 Mathf.Cos(angle) * r,
@@ -127,7 +134,7 @@ public class LevelBlockGenerator : MonoBehaviour
             block.transform.SetParent(transform, false);   // adopt parent's (scaled) space
             block.transform.localPosition = localPos;
             block.transform.localRotation = rot;
-            block.transform.localScale = Vector3.one * blockScale;
+            block.transform.localScale = Vector3.one * (isCheckpoint ? checkpointScale : blockScale);
             block.name = isCheckpoint ? $"Checkpoint_{i:000}" : $"Block_{i:000}";
 
             if (ensureCollider && block.GetComponentInChildren<Collider>() == null)
