@@ -132,6 +132,31 @@ public static class DemoClimbBuilder
         Debug.Log("[DemoClimbBuilder] Built circular climb anchored on the summit. Press Play and jump (Space).");
     }
 
+    /// <summary>
+    /// Unpacks every generated block so they become plain GameObjects you can freely
+    /// select, move, and delete (prefab-instance children can't be deleted individually).
+    /// </summary>
+    [MenuItem("Tools/Paws/Unpack Blocks (make editable)")]
+    public static void UnpackBlocks()
+    {
+        var root = GameObject.Find(Root);
+        if (root == null) { Debug.LogWarning("[DemoClimbBuilder] No LevelBlocks found."); return; }
+
+        int n = 0;
+        // Snapshot children first — unpacking mutates the hierarchy.
+        foreach (Transform child in root.transform.Cast<Transform>().ToArray())
+        {
+            var go = child.gameObject;
+            if (PrefabUtility.IsAnyPrefabInstanceRoot(go))
+            {
+                PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                n++;
+            }
+        }
+        EditorSceneManager.MarkSceneDirty(root.scene);
+        Debug.Log($"[DemoClimbBuilder] Unpacked {n} blocks — they're now freely deletable.");
+    }
+
     [MenuItem("Tools/Paws/Clear Demo Climb")]
     public static void Clear()
     {
