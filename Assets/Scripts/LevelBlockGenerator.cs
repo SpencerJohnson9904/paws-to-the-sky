@@ -31,23 +31,26 @@ public class LevelBlockGenerator : MonoBehaviour
 
     [Header("Layout")]
     [Tooltip("How many blocks to spawn.")]
-    [SerializeField] int blockCount = 12;
+    [SerializeField] int blockCount = 14;
 
-    [Tooltip("Vertical rise added per block. Player max reachable rise on a full " +
-             "charge is ~4.1m — keep this below it for a fair climb.")]
-    [SerializeField] float verticalStep = 2.5f;
+    [Tooltip("Radius of the circle the blocks wind around (matches the existing level: " +
+             "~4). The chain spirals around this circle rather than shooting straight up.")]
+    [SerializeField] float circleRadius = 4f;
 
-    [Tooltip("Horizontal travel per block. Player max horizontal reach is ~14m at " +
-             "full charge; this is comfortable spacing.")]
-    [SerializeField] float horizontalStep = 3.5f;
+    [Tooltip("Degrees travelled around the circle per block. ~70 gives ~5 blocks per loop.")]
+    [SerializeField] float angleStep = 70f;
 
-    [Tooltip("Degrees the path rotates around Y each step, making a spiral staircase. " +
-             "0 = straight line.")]
-    [SerializeField] float spiralAngle = 55f;
+    [Tooltip("Vertical rise per block. The existing platforms step up only ~0.5 each, so " +
+             "keep this small for a gentle, walkable climb (not a steep tower).")]
+    [SerializeField] float verticalStep = 0.6f;
 
-    [Tooltip("Random horizontal wobble added to each block so the climb feels less " +
-             "mechanical. 0 = perfectly regular.")]
-    [SerializeField] float jitter = 0.4f;
+    [Tooltip("Random wobble (radius & height) added per block so the ring feels organic " +
+             "rather than perfectly geometric. 0 = perfectly regular.")]
+    [SerializeField] float jitter = 0.6f;
+
+    [Tooltip("Give each block a random 90° yaw, like the varied rotations in the existing " +
+             "level. Off = all face the same way.")]
+    [SerializeField] bool randomYRotation = true;
 
     [Tooltip("Uniform scale applied to each spawned block.")]
     [SerializeField] float blockScale = 1f;
@@ -97,24 +100,29 @@ public class LevelBlockGenerator : MonoBehaviour
             return;
         }
 
-        Vector3 pos = ResolveStart();
-        float heading = 0f;
+        // Centre the circle on the current summit so the new ring winds around the
+        // existing climb rather than rocketing straight up from one edge.
+        Vector3 center = ResolveStart();
+        float startY = center.y;
         var rng = new System.Random(seed);
 
         for (int i = 0; i < blockCount; i++)
         {
-            heading += spiralAngle;
-            Vector3 dir = Quaternion.Euler(0f, heading, 0f) * Vector3.forward;
-            Vector3 wobble = new Vector3(
-                (float)(rng.NextDouble() * 2.0 - 1.0) * jitter, 0f,
-                (float)(rng.NextDouble() * 2.0 - 1.0) * jitter);
-
-            pos += dir * horizontalStep + Vector3.up * verticalStep + wobble;
+            float angle = (i * angleStep) * Mathf.Deg2Rad;
+            float r = circleRadius + (float)(rng.NextDouble() * 2.0 - 1.0) * jitter;
+            Vector3 pos = new Vector3(
+                center.x + Mathf.Cos(angle) * r,
+                startY + verticalStep * (i + 1) + (float)(rng.NextDouble() * 2.0 - 1.0) * jitter * 0.5f,
+                center.z + Mathf.Sin(angle) * r);
 
             GameObject prefab = blockPrefabs[rng.Next(blockPrefabs.Length)];
             if (prefab == null) continue;
 
-            GameObject block = InstantiateBlock(prefab, pos);
+            Quaternion rot = randomYRotation
+                ? Quaternion.Euler(0f, rng.Next(4) * 90f, 0f)
+                : Quaternion.identity;
+
+            GameObject block = InstantiateBlock(prefab, pos, rot);
             block.transform.SetParent(transform, true);
             block.transform.localScale = Vector3.one * blockScale;
             block.name = $"Block_{i:000}";
@@ -133,7 +141,7 @@ public class LevelBlockGenerator : MonoBehaviour
 
             if (coinPrefab != null)
             {
-                GameObject coin = InstantiateBlock(coinPrefab, pos + Vector3.up * coinHeight);
+                GameObject coin = InstantiateBlock(coinPrefab, pos + Vector3.up * coinHeight, Quaternion.identity);
                 coin.transform.SetParent(transform, true);
                 coin.name = $"Coin_{i:000}";
                 spawned.Add(coin);
@@ -189,19 +197,19 @@ public class LevelBlockGenerator : MonoBehaviour
         return false;
     }
 
-    GameObject InstantiateBlock(GameObject prefab, Vector3 position)
+    GameObject InstantiateBlock(GameObject prefab, Vector3 position, Quaternion rotation)
     {
 #if UNITY_EDITOR
         if (!Application.isPlaying)
         {
             // Keep the prefab connection so the blocks stay linked to their source asset.
             var go = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab);
-            go.transform.position = position;
+            go.transform.SetPositionAndRotation(position, rotation);
             UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Generate Block");
             return go;
         }
 #endif
-        return Instantiate(prefab, position, Quaternion.identity);
+        return Instantiate(prefab, position, rotation);
     }
 
     void DestroyBlock(GameObject go)

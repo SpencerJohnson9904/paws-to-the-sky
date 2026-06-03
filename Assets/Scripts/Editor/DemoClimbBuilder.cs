@@ -54,6 +54,17 @@ public static class DemoClimbBuilder
         Undo.RegisterCreatedObjectUndo(go, "Build Demo Climb");
         var gen = go.AddComponent<LevelBlockGenerator>();
 
+        // Anchor the ring on the existing summit (the checkpoint platform), NOT on the
+        // tallest collider — tree meshes are taller and would pull the ring off over them.
+        // Centre horizontally on the checkpoint; start just ABOVE the existing top
+        // platform (its surface is ~6.1) so the ring continues the climb cleanly
+        // instead of overlapping the current summit.
+        var cp = Object.FindObjectsByType<CheckpointTrigger>(FindObjectsSortMode.None).FirstOrDefault();
+        Vector3 c = cp != null ? cp.transform.position : new Vector3(8.6f, 0f, 2.9f);
+        var anchor = new GameObject("ClimbAnchor");
+        anchor.transform.SetParent(go.transform);
+        anchor.transform.position = new Vector3(c.x, 6.6f, c.z);
+
         var prefabs = BlockPrefabs
             .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
             .Where(p => p != null).ToArray();
@@ -70,19 +81,24 @@ public static class DemoClimbBuilder
         arr.arraySize = prefabs.Length;
         for (int i = 0; i < prefabs.Length; i++)
             arr.GetArrayElementAtIndex(i).objectReferenceValue = prefabs[i];
-        so.FindProperty("blockCount").intValue = 16;
-        so.FindProperty("verticalStep").floatValue = 2.5f;
-        so.FindProperty("horizontalStep").floatValue = 3.5f;
+        // Match the existing level: a gentle ring, not a steep tower.
+        so.FindProperty("blockCount").intValue = 14;
+        so.FindProperty("circleRadius").floatValue = 4f;
+        so.FindProperty("angleStep").floatValue = 70f;
+        so.FindProperty("verticalStep").floatValue = 0.6f;
         so.FindProperty("checkpointEvery").intValue = 4;
+        so.FindProperty("startFrom").objectReferenceValue = anchor.transform;
+        so.FindProperty("startFromHighestPlatform").boolValue = false;
         so.ApplyModifiedPropertiesWithoutUndo();
 
         gen.Generate();
-        TintBiomeBands(go);
+        // Biome tinting left off so the new ring blends with the existing grass
+        // platforms. Re-enable by calling TintBiomeBands(go) here.
 
         EditorSceneManager.MarkSceneDirty(go.scene);
         Selection.activeGameObject = go;
         SceneView.FrameLastActiveSceneView();
-        Debug.Log("[DemoClimbBuilder] Built demo climb with biome bands. Press Play and jump (Space).");
+        Debug.Log("[DemoClimbBuilder] Built circular climb anchored on the summit. Press Play and jump (Space).");
     }
 
     [MenuItem("Tools/Paws/Clear Demo Climb")]
