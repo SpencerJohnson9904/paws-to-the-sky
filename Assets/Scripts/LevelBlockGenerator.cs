@@ -60,8 +60,13 @@ public class LevelBlockGenerator : MonoBehaviour
     [SerializeField] float blockScale = 1f;
 
     [Header("Checkpoints")]
-    [Tooltip("Every Nth block becomes a checkpoint (gets a CheckpointTrigger). 0 = none.")]
+    [Tooltip("Every Nth block becomes a checkpoint (gets a CheckpointTrigger). 0 = none. " +
+             "Ignored when Checkpoint Indices is non-empty.")]
     [SerializeField] int checkpointEvery = 3;
+
+    [Tooltip("Explicit block indices (0-based) that should be checkpoints. When set, this " +
+             "overrides Checkpoint Every — e.g. {4,7,11}.")]
+    [SerializeField] int[] checkpointIndices;
 
     [Tooltip("Prefab used for checkpoint blocks — e.g. Grass/Prefabs/Props/ButtonBase " +
              "(the flat platform with a button). Leave empty to reuse a normal block " +
@@ -122,7 +127,9 @@ public class LevelBlockGenerator : MonoBehaviour
                 verticalStep * (i + 1) + (float)(rng.NextDouble() * 2.0 - 1.0) * jitter * 0.5f,
                 Mathf.Sin(angle) * r);
 
-            bool isCheckpoint = checkpointEvery > 0 && (i + 1) % checkpointEvery == 0;
+            bool isCheckpoint = checkpointIndices != null && checkpointIndices.Length > 0
+                ? System.Array.IndexOf(checkpointIndices, i) >= 0
+                : (checkpointEvery > 0 && (i + 1) % checkpointEvery == 0);
 
             // Every block — checkpoint or not — is a real, landable platform.
             GameObject prefab = blockPrefabs[rng.Next(blockPrefabs.Length)];

@@ -117,6 +117,11 @@ public static class DemoClimbBuilder
         so.FindProperty("verticalStep").floatValue = verticalStep;
         so.FindProperty("blockScale").floatValue = 1f;   // existing platforms are scale 1
         so.FindProperty("checkpointEvery").intValue = 4;
+        // Checkpoints on platforms #4, #7, #11 (first one moved off #3 onto #4).
+        int[] cpIdx = { 4, 7, 11 };
+        var ci = so.FindProperty("checkpointIndices");
+        ci.arraySize = cpIdx.Length;
+        for (int k = 0; k < cpIdx.Length; k++) ci.GetArrayElementAtIndex(k).intValue = cpIdx[k];
         so.FindProperty("checkpointScale").floatValue = CheckpointScale;
         var cpProp = so.FindProperty("checkpointPrefab");
         if (cpProp != null) cpProp.objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(CheckpointPrefab);
