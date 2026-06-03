@@ -68,8 +68,11 @@ public class LevelBlockGenerator : MonoBehaviour
              "with just the trigger added.")]
     [SerializeField] GameObject checkpointPrefab;
 
-    [Tooltip("Scale applied to checkpoint blocks (the existing ButtonBase uses 0.5).")]
+    [Tooltip("Scale of the button sitting on a checkpoint platform (existing one is 0.5).")]
     [SerializeField] float checkpointScale = 1f;
+
+    [Tooltip("Local height to lift the button above its platform so it rests on top.")]
+    [SerializeField] float checkpointButtonHeight = 0.7f;
 
     [Header("Coins (optional)")]
     [Tooltip("Optional collectible prefab (e.g. Grass/Prefabs/Props/Coin) floated above " +
@@ -121,9 +124,8 @@ public class LevelBlockGenerator : MonoBehaviour
 
             bool isCheckpoint = checkpointEvery > 0 && (i + 1) % checkpointEvery == 0;
 
-            GameObject prefab = isCheckpoint && checkpointPrefab != null
-                ? checkpointPrefab
-                : blockPrefabs[rng.Next(blockPrefabs.Length)];
+            // Every block — checkpoint or not — is a real, landable platform.
+            GameObject prefab = blockPrefabs[rng.Next(blockPrefabs.Length)];
             if (prefab == null) continue;
 
             Quaternion rot = randomYRotation
@@ -134,7 +136,7 @@ public class LevelBlockGenerator : MonoBehaviour
             block.transform.SetParent(transform, false);   // adopt parent's (scaled) space
             block.transform.localPosition = localPos;
             block.transform.localRotation = rot;
-            block.transform.localScale = Vector3.one * (isCheckpoint ? checkpointScale : blockScale);
+            block.transform.localScale = Vector3.one * blockScale;
             block.name = isCheckpoint ? $"Checkpoint_{i:000}" : $"Block_{i:000}";
 
             if (ensureCollider && block.GetComponentInChildren<Collider>() == null)
@@ -144,8 +146,23 @@ public class LevelBlockGenerator : MonoBehaviour
                 else block.AddComponent<BoxCollider>();
             }
 
-            if (isCheckpoint && block.GetComponent<CheckpointTrigger>() == null)
-                block.AddComponent<CheckpointTrigger>();
+            if (isCheckpoint)
+            {
+                // Sit the button ON TOP of the platform (like the base-version checkpoint),
+                // and put the trigger on the platform the player actually lands on.
+                if (block.GetComponent<CheckpointTrigger>() == null)
+                    block.AddComponent<CheckpointTrigger>();
+
+                if (checkpointPrefab != null)
+                {
+                    GameObject button = InstantiateBlock(checkpointPrefab);
+                    button.transform.SetParent(block.transform, false);
+                    button.transform.localPosition = Vector3.up * checkpointButtonHeight;
+                    button.transform.localScale = Vector3.one * checkpointScale;
+                    button.name = "Button";
+                    spawned.Add(button);
+                }
+            }
 
             spawned.Add(block);
 
