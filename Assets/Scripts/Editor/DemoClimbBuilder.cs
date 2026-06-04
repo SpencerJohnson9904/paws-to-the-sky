@@ -266,6 +266,43 @@ public static class DemoClimbBuilder
         Debug.Log($"[DemoClimbBuilder] Unpacked {n} blocks — they're now freely deletable.");
     }
 
+    /// <summary>Batch entry: renumber checkpoints by height and save.</summary>
+    public static void RenumberCheckpointsAndSave()
+    {
+        var scene = EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity", OpenSceneMode.Single);
+        RenumberCheckpoints();
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[DemoClimbBuilder] Saved scene with renumbered checkpoints.");
+    }
+
+    /// <summary>
+    /// Names every checkpoint in the scene sequentially by height — "Checkpoint 1" is the
+    /// lowest, "Checkpoint 2" the next up, etc. — and gives them a consistent world-space
+    /// trigger radius so they fire only when the player is actually on the platform.
+    /// </summary>
+    [MenuItem("Tools/Paws/Renumber Checkpoints")]
+    public static void RenumberCheckpoints()
+    {
+        const float worldTriggerRadius = 2f;
+        var triggers = Object.FindObjectsByType<CheckpointTrigger>(FindObjectsSortMode.None)
+            .OrderBy(c => c.transform.position.y)   // bottom → top
+            .ToList();
+
+        for (int i = 0; i < triggers.Count; i++)
+        {
+            var t = triggers[i];
+            t.gameObject.name = $"Checkpoint {i + 1}";
+            var so = new SerializedObject(t);
+            var tr = so.FindProperty("triggerRadius");
+            if (tr != null) tr.floatValue = worldTriggerRadius;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(t);
+        }
+        if (triggers.Count > 0) EditorSceneManager.MarkSceneDirty(triggers[0].gameObject.scene);
+        Debug.Log($"[DemoClimbBuilder] Renumbered {triggers.Count} checkpoints by height (1 = lowest), " +
+                  $"trigger radius {worldTriggerRadius} world units.");
+    }
+
     [MenuItem("Tools/Paws/Clear Demo Climb")]
     public static void Clear()
     {

@@ -2982,7 +2982,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8062224495308751662, guid: 696054cd3122fd4408591593623f7f19, type: 3}
       propertyPath: m_Name
-      value: Checkpoint_004
+      value: Checkpoint 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3019,7 +3019,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  triggerRadius: 3
+  triggerRadius: 2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
@@ -3227,7 +3227,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1048603564969598889, guid: a1d346d8e49157640a865618f141d10e, type: 3}
       propertyPath: m_Name
-      value: Checkpoint_007
+      value: Checkpoint 3
       objectReference: {fileID: 0}
     - target: {fileID: 5691240492763391568, guid: a1d346d8e49157640a865618f141d10e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3304,7 +3304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  triggerRadius: 3
+  triggerRadius: 2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
@@ -3482,7 +3482,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  triggerRadius: 1.5
+  triggerRadius: 2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
@@ -3654,7 +3654,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3711785721855332173, guid: 394840af8bfafcd40ab658ebd549b96d, type: 3}
       propertyPath: m_Name
-      value: Checkpoint_011
+      value: Checkpoint 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3691,7 +3691,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  triggerRadius: 3
+  triggerRadius: 2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
@@ -4087,7 +4087,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
       propertyPath: m_Name
-      value: CheckPoint1
+      value: Checkpoint 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4605,7 +4605,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1064517047891178425, guid: fc1e359a90d4e6542b4d8022c50429ce, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.938789
+      value: 5.55
       objectReference: {fileID: 0}
     - target: {fileID: 1064517047891178425, guid: fc1e359a90d4e6542b4d8022c50429ce, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5632,7 +5632,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6616142317143122160, guid: f8aa396952c169d4c898e4d8204c6b60, type: 3}
       propertyPath: m_Name
-      value: Checkpoint_013
+      value: Checkpoint 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5669,7 +5669,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  triggerRadius: 3
+  triggerRadius: 2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
