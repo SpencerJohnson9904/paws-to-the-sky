@@ -30,13 +30,13 @@ public static class DemoClimbBuilder
     const string CheckpointPrefab = "Assets/Grass/Prefabs/Props/ButtonBase.prefab";
     const float CheckpointScale = 0.5f;
 
-    // Biome bands applied bottom→top. Each is (body material, top material).
-    static readonly (string body, string top)[] Biomes =
+    // Biome bands applied bottom→top. Each is (name, body material, top material).
+    static readonly (string name, string body, string top)[] Biomes =
     {
-        ("Assets/Grass/Materials/Dirt.mat",                  "Assets/Grass/Materials/Grass.mat"),         // grassland
-        ("Assets/Grass/Materials/Biomes/Desert_Body.mat",    "Assets/Grass/Materials/Biomes/Desert_Top.mat"),
-        ("Assets/Grass/Materials/Biomes/Snow_Body.mat",      "Assets/Grass/Materials/Biomes/Snow_Top.mat"),
-        ("Assets/Grass/Materials/Biomes/Volcanic_Body.mat",  "Assets/Grass/Materials/Biomes/Volcanic_Top.mat"),
+        ("Grassland", "Assets/Grass/Materials/Dirt.mat",                  "Assets/Grass/Materials/Grass.mat"),
+        ("Desert",    "Assets/Grass/Materials/Biomes/Desert_Body.mat",    "Assets/Grass/Materials/Biomes/Desert_Top.mat"),
+        ("Snow",      "Assets/Grass/Materials/Biomes/Snow_Body.mat",      "Assets/Grass/Materials/Biomes/Snow_Top.mat"),
+        ("Volcanic",  "Assets/Grass/Materials/Biomes/Volcanic_Body.mat",  "Assets/Grass/Materials/Biomes/Volcanic_Top.mat"),
     };
 
     /// <summary>
@@ -78,12 +78,12 @@ public static class DemoClimbBuilder
         if (space != null) go.transform.SetParent(space, false);
 
         // Fit the circle the existing platforms revolve around, in Grass-Level local space.
-        var (localCenter, fitRadius, topY) = FitSpiralCircle(space, go);
+        var (localCenter, fitRadius, topLocal) = FitSpiralCircle(space, go);
 
         // Find the existing checkpoint and CONTINUE the spiral from it: its angle around
         // the circle and its height become the starting point for the new platforms.
         const float angleStep = 30f, verticalStep = 0.47f;
-        float startAngle = 0f, baseY = topY;
+        float startAngle = 0f, baseY = topLocal.y;
         var cp = Object.FindObjectsByType<CheckpointTrigger>(FindObjectsSortMode.None).FirstOrDefault();
         if (cp != null)
         {
@@ -128,13 +128,117 @@ public static class DemoClimbBuilder
         so.ApplyModifiedPropertiesWithoutUndo();
 
         gen.Generate();
-        // Biome tinting left off so the new ring blends with the existing grass
-        // platforms. Re-enable by calling TintBiomeBands(go) here.
+        // Base segment stays grass-coloured; biome segments are added separately.
 
         EditorSceneManager.MarkSceneDirty(go.scene);
         Selection.activeGameObject = go;
         SceneView.FrameLastActiveSceneView();
         Debug.Log("[DemoClimbBuilder] Built circular climb anchored on the summit. Press Play and jump (Space).");
+    }
+
+    // ── Biome segments ────────────────────────────────────────────────────────
+    // Each call continues the spiral from the current TOP platform, in a different
+    // biome, with the topmost new platform as a checkpoint. Stack them: grass → desert → …
+
+    [MenuItem("Tools/Paws/Add Biome Segment ▸ Desert")]   public static void AddDesert()   => BuildBiomeSegment(1);
+    [MenuItem("Tools/Paws/Add Biome Segment ▸ Snow")]     public static void AddSnow()     => BuildBiomeSegment(2);
+    [MenuItem("Tools/Paws/Add Biome Segment ▸ Volcanic")] public static void AddVolcanic() => BuildBiomeSegment(3);
+
+    /// <summary>Batch entry: open scene, add a Desert segment on top, save.</summary>
+    public static void BuildDesertSegmentAndSave()
+    {
+        var scene = EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity", OpenSceneMode.Single);
+        BuildBiomeSegment(1);
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[DemoClimbBuilder] Saved scene with biome segment.");
+    }
+
+    static void BuildBiomeSegment(int biomeIdx)
+    {
+        var (biomeName, bodyPath, topPath) = Biomes[Mathf.Clamp(biomeIdx, 0, Biomes.Length - 1)];
+
+        var prefabs = BlockPrefabs.Select(AssetDatabase.LoadAssetAtPath<GameObject>).Where(p => p != null).ToArray();
+        if (prefabs.Length == 0) { Debug.LogError("[DemoClimbBuilder] No block prefabs found."); return; }
+
+        var grass = GameObject.Find("Grass Level");
+        Transform space = grass != null ? grass.transform : null;
+
+        // Fresh root per biome so segments can be rebuilt independently.
+        string rootName = Root + "_" + biomeName;
+        var prev = GameObject.Find(rootName);
+        if (prev != null) Undo.DestroyObjectImmediate(prev);
+
+        var go = new GameObject(rootName);
+        Undo.RegisterCreatedObjectUndo(go, "Add Biome Segment");
+        if (space != null) go.transform.SetParent(space, false);
+
+        // Continue from the CURRENT top platform of the whole climb.
+        var (localCenter, fitRadius, topLocal) = FitSpiralCircle(space, go);
+        const float angleStep = 30f, verticalStep = 0.47f;
+        float startAngle = Mathf.Atan2(topLocal.z - localCenter.z, topLocal.x - localCenter.x) * Mathf.Rad2Deg + angleStep;
+
+        go.transform.localPosition = new Vector3(localCenter.x, topLocal.y, localCenter.z);
+        go.transform.localRotation = Quaternion.identity;
+        go.transform.localScale = Vector3.one;
+
+        var gen = go.AddComponent<LevelBlockGenerator>();
+        var so = new SerializedObject(gen);
+        var arr = so.FindProperty("blockPrefabs");
+        arr.arraySize = prefabs.Length;
+        for (int i = 0; i < prefabs.Length; i++) arr.GetArrayElementAtIndex(i).objectReferenceValue = prefabs[i];
+
+        const int count = 14;
+        so.FindProperty("blockCount").intValue = count;
+        so.FindProperty("circleRadius").floatValue = fitRadius;
+        so.FindProperty("angleStep").floatValue = angleStep;
+        so.FindProperty("startAngle").floatValue = startAngle;
+        so.FindProperty("verticalStep").floatValue = verticalStep;
+        so.FindProperty("blockScale").floatValue = 1f;
+        so.FindProperty("checkpointScale").floatValue = CheckpointScale;
+        var cpProp = so.FindProperty("checkpointPrefab");
+        if (cpProp != null) cpProp.objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(CheckpointPrefab);
+        // The TOP-MOST platform of this segment is the checkpoint.
+        var ci = so.FindProperty("checkpointIndices");
+        ci.arraySize = 1;
+        ci.GetArrayElementAtIndex(0).intValue = count - 1;
+        so.ApplyModifiedPropertiesWithoutUndo();
+
+        gen.Generate();
+        TintSegment(go, bodyPath, topPath);
+
+        EditorSceneManager.MarkSceneDirty(go.scene);
+        Selection.activeGameObject = go;
+        SceneView.FrameLastActiveSceneView();
+        Debug.Log($"[DemoClimbBuilder] Added {biomeName} segment ({count} platforms) continuing from " +
+                  $"{startAngle - angleStep:F0}° at Y {topLocal.y:F2}; top platform is a checkpoint.");
+    }
+
+    /// <summary>Recolor a whole segment's platforms into one biome (button left alone).</summary>
+    static void TintSegment(GameObject root, string bodyPath, string topPath)
+    {
+        var body = AssetDatabase.LoadAssetAtPath<Material>(bodyPath);
+        var top  = AssetDatabase.LoadAssetAtPath<Material>(topPath);
+
+        foreach (Transform block in root.transform)
+        {
+            foreach (var r in block.GetComponentsInChildren<Renderer>())
+            {
+                // Skip the checkpoint button subtree — only tint the platform itself.
+                bool underButton = false;
+                for (var p = r.transform; p != null && p != block; p = p.parent)
+                    if (p.name == "Button") { underButton = true; break; }
+                if (underButton) continue;
+
+                var mats = r.sharedMaterials;
+                for (int m = 0; m < mats.Length; m++)
+                {
+                    if (mats[m] == null) continue;
+                    if (mats[m].name.Contains("Grass")) mats[m] = top ?? mats[m];
+                    else if (mats[m].name.Contains("Dirt")) mats[m] = body ?? mats[m];
+                }
+                r.sharedMaterials = mats;
+            }
+        }
     }
 
     /// <summary>
@@ -178,10 +282,11 @@ public static class DemoClimbBuilder
     /// (Kåsa) fit over the platform instances' X/Z, ignoring trees/rocks/cars and
     /// anything under our own root. Returns the fitted centre and radius.
     /// </summary>
-    static (Vector3 center, float radius, float topY) FitSpiralCircle(Transform space, GameObject ourRoot)
+    static (Vector3 center, float radius, Vector3 topLocal) FitSpiralCircle(Transform space, GameObject ourRoot)
     {
         var pts = new List<Vector2>();
-        float topY = 0f;
+        Vector3 topLocal = Vector3.zero;
+        float topY = float.NegativeInfinity;
         foreach (var root in ourRoot.scene.GetRootGameObjects())
         {
             foreach (var t in root.GetComponentsInChildren<Transform>())
@@ -199,12 +304,12 @@ public static class DemoClimbBuilder
                     // the coordinates the generator will place blocks in.
                     Vector3 local = space != null ? space.InverseTransformPoint(t.position) : t.position;
                     pts.Add(new Vector2(local.x, local.z));
-                    if (local.y > topY) topY = local.y;
+                    if (local.y > topY) { topY = local.y; topLocal = local; }
                 }
             }
         }
         var (c, r) = Fit(pts);
-        return (c, r, topY);
+        return (c, r, topLocal);
     }
 
     /// <summary>Kåsa least-squares circle fit. Falls back to centroid if degenerate.</summary>
@@ -235,34 +340,4 @@ public static class DemoClimbBuilder
         return (new Vector3(cx, 0f, cz), r);
     }
 
-    /// <summary>Recolor the generated blocks into vertical biome bands.</summary>
-    static void TintBiomeBands(GameObject root)
-    {
-        var blocks = root.GetComponentsInChildren<Transform>()
-            .Where(t => t.name.StartsWith("Block_"))
-            .OrderBy(t => t.position.y)
-            .ToList();
-        if (blocks.Count == 0) return;
-
-        int perBand = Mathf.CeilToInt(blocks.Count / (float)Biomes.Length);
-        for (int i = 0; i < blocks.Count; i++)
-        {
-            var (bodyPath, topPath) = Biomes[Mathf.Min(i / perBand, Biomes.Length - 1)];
-            var body = AssetDatabase.LoadAssetAtPath<Material>(bodyPath);
-            var top  = AssetDatabase.LoadAssetAtPath<Material>(topPath);
-
-            foreach (var r in blocks[i].GetComponentsInChildren<Renderer>())
-            {
-                // Preserve the base/top split: grass-coloured slots become the biome top,
-                // everything else becomes the biome body.
-                var mats = r.sharedMaterials;
-                for (int m = 0; m < mats.Length; m++)
-                {
-                    bool isTop = mats[m] != null && mats[m].name.Contains("Grass");
-                    mats[m] = isTop ? (top ?? mats[m]) : (body ?? mats[m]);
-                }
-                r.sharedMaterials = mats;
-            }
-        }
-    }
 }
