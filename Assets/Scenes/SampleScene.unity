@@ -5425,7 +5425,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  triggerRadius: 2
+  triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
