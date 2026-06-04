@@ -34,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     Vector3 squishOriginalScale;
 
     public float ChargeFraction => Mathf.Clamp01(chargeTime / maxChargeTime);
+    public bool IsGrounded => grounded;
 
     //debug
     void Start()

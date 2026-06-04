@@ -47,6 +47,7 @@ public class CheckpointTrigger : MonoBehaviour
 
     // ── Private state ─────────────────────────────────────────────────────────
     bool activated;
+    bool pendingRotation;   // position saved, waiting for player to land before saving rotation
     SphereCollider triggerCollider;
 
     // ── Public API ──────────────────────────────────────────────────────────────
@@ -93,20 +94,26 @@ public class CheckpointTrigger : MonoBehaviour
         if (activated) return;
         if (!other.CompareTag("Player")) return;
 
-        // Determine where the player will respawn
-        Vector3 spawnPos = SpawnPosition;
-
-        // Register with the manager
-        if (CheckpointManager.Instance != null)
+        if (CheckpointManager.Instance == null)
         {
-            CheckpointManager.Instance.SetCheckpoint(spawnPos);
-        }
-        else
-        {
-            Debug.LogWarning("[CheckpointTrigger] No CheckpointManager found in scene! " +
-                             "Add one to a GameObject and assign the Player reference.");
+            Debug.LogWarning("[CheckpointTrigger] No CheckpointManager found in scene!");
+            return;
         }
 
+        CheckpointManager.Instance.SetCheckpoint(SpawnPosition, other.transform.rotation);
+        pendingRotation = true;
+    }
+
+    void OnTriggerStay(Collider other)
+    {
+        if (!pendingRotation) return;
+        if (!other.CompareTag("Player")) return;
+
+        var pm = other.GetComponent<PlayerMovement>();
+        if (pm == null || !pm.IsGrounded) return;
+
+        CheckpointManager.Instance.UpdateCheckpointRotation(other.transform.rotation);
+        pendingRotation = false;
         activated = true;
         RefreshVisuals();
     }
