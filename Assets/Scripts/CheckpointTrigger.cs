@@ -56,7 +56,14 @@ public class CheckpointTrigger : MonoBehaviour
         // This does NOT touch any existing MeshCollider / BoxCollider on the object.
         triggerCollider = gameObject.AddComponent<SphereCollider>();
         triggerCollider.isTrigger = true;
-        triggerCollider.radius    = triggerRadius;
+
+        // Treat triggerRadius as WORLD units: a SphereCollider's effective radius is
+        // scaled by the object's lossyScale, so divide it out. Without this, a checkpoint
+        // on a platform parented under the scaled "Grass Level" gets a giant trigger that
+        // fires from far away (and banks higher checkpoints prematurely).
+        Vector3 ls = transform.lossyScale;
+        float maxScale = Mathf.Max(Mathf.Abs(ls.x), Mathf.Abs(ls.y), Mathf.Abs(ls.z));
+        triggerCollider.radius = triggerRadius / Mathf.Max(maxScale, 0.0001f);
     }
 
     void Start()
