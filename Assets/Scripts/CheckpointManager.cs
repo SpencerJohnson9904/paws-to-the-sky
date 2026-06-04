@@ -82,6 +82,12 @@ public class CheckpointManager : MonoBehaviour
     // ── Public API ────────────────────────────────────────────────────────────
 
     /// <summary>
+    /// The player transform this manager controls. Exposed read-only so debug
+    /// tooling can read the player's current position without owning the reference.
+    /// </summary>
+    public Transform Player => player;
+
+    /// <summary>
     /// Called by CheckpointTrigger when the player activates a checkpoint.
     /// Only saves the checkpoint if it is HIGHER than the current one —
     /// falling back onto a lower platform never downgrades progress.
@@ -102,6 +108,18 @@ public class CheckpointManager : MonoBehaviour
     /// </summary>
     public void Respawn()
     {
+        TeleportTo(currentRespawnPos);
+        Debug.Log($"[CheckpointManager] Respawned at {currentRespawnPos}");
+    }
+
+    /// <summary>
+    /// Teleport the player to an arbitrary position and reset movement state.
+    /// This is the single source of truth for moving the player — Respawn(),
+    /// JumpToCheckpoint() and any debug tooling all route through here.
+    /// Does NOT change the saved respawn point.
+    /// </summary>
+    public void TeleportTo(Vector3 position)
+    {
         if (player == null) return;
 
         isRespawning = true;
@@ -114,7 +132,7 @@ public class CheckpointManager : MonoBehaviour
         }
 
         // Teleport
-        player.position = currentRespawnPos;
+        player.position = position;
 
         // Reset the movement state machine so the player can aim immediately
         var pm = player.GetComponent<PlayerMovement>();
@@ -122,7 +140,20 @@ public class CheckpointManager : MonoBehaviour
             pm.ResetState();
 
         isRespawning = false;
+    }
 
-        Debug.Log($"[CheckpointManager] Respawned at {currentRespawnPos}");
+    /// <summary>
+    /// Debug helper: teleport the player to a checkpoint AND make it the active
+    /// respawn point, so a subsequent fall returns there. Unlike SetCheckpoint(),
+    /// this intentionally allows jumping to a LOWER checkpoint — the no-downgrade
+    /// rule is for normal play, not debugging.
+    /// </summary>
+    public void JumpToCheckpoint(Vector3 spawnPos)
+    {
+        currentRespawnPos = spawnPos;
+        checkpointY       = spawnPos.y;
+        TeleportTo(spawnPos);
+        Debug.Log($"[CheckpointManager] Debug jump to {spawnPos} " +
+                  $"(now the active respawn).");
     }
 }

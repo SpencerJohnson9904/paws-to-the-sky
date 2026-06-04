@@ -49,6 +49,23 @@ public class CheckpointTrigger : MonoBehaviour
     bool activated;
     SphereCollider triggerCollider;
 
+    // ── Public API ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// World position the player respawns at for this checkpoint — the linked
+    /// respawnPoint if set, otherwise this object's position lifted by the offset.
+    /// Debug tooling reads this to teleport directly to the checkpoint.
+    /// </summary>
+    public Vector3 SpawnPosition => respawnPoint != null
+        ? respawnPoint.position
+        : transform.position + Vector3.up * spawnHeightOffset;
+
+    /// <summary>Display name for this checkpoint (the GameObject's name).</summary>
+    public string CheckpointName => gameObject.name;
+
+    /// <summary>Whether the player has already activated this checkpoint in play.</summary>
+    public bool IsActivated => activated;
+
     // ── Unity lifecycle ───────────────────────────────────────────────────────
     void Awake()
     {
@@ -77,9 +94,7 @@ public class CheckpointTrigger : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         // Determine where the player will respawn
-        Vector3 spawnPos = respawnPoint != null
-            ? respawnPoint.position
-            : transform.position + Vector3.up * spawnHeightOffset;
+        Vector3 spawnPos = SpawnPosition;
 
         // Register with the manager
         if (CheckpointManager.Instance != null)

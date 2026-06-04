@@ -13,7 +13,7 @@ public class cameraFollow : MonoBehaviour
     [Tooltip("Objects between the camera and the cat on these layers get hidden so they never block the view.")]
     public LayerMask occlusionMask = ~0;
     [Tooltip("Radius of the cast toward the cat. Larger values hide objects that clip the edges of the view.")]
-    public float occlusionRadius = 0.3f;
+    public float occlusionRadius = 0.4f;
     [Tooltip("How far short of the cat to stop checking, so the cat's own colliders are never hidden.")]
     public float occlusionPadding = 0.5f;
     [Tooltip("Extra height above the cat's head before an object counts as blocking. Keeps the ground/platform the cat stands on visible.")]

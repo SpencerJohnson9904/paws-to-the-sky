@@ -2797,6 +2797,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1315144262}
   - component: {fileID: 1315144261}
+  - component: {fileID: 1315144263}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2834,6 +2835,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1315144263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1315144260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e99e944971fec468fa211a3f53a32005, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DebugCheckpointMenu
+  toggleKey: 94
+  openOnStart: 0
+  panelWidth: 260
+  panelMaxHeight: 420
 --- !u!1001 &1323311062
 PrefabInstance:
   m_ObjectHideFlags: 0
