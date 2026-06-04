@@ -32,6 +32,10 @@ public class CheckpointManager : MonoBehaviour
              "Leave empty to use the player's initial position at scene start.")]
     [SerializeField] Transform defaultSpawnPoint;
 
+    [Header("UI")]
+    [Tooltip("Assign the CheckpointNotification component on your Canvas.")]
+    [SerializeField] CheckpointNotification notification;
+
     // ── Private state ─────────────────────────────────────────────────────────
     Vector3 currentRespawnPos;   // position to teleport back to
     float   checkpointY;         // Y of the last activated checkpoint — fall threshold
@@ -99,6 +103,7 @@ public class CheckpointManager : MonoBehaviour
 
         currentRespawnPos = respawnPosition;
         checkpointY       = respawnPosition.y;
+        notification?.Show();
         Debug.Log($"[CheckpointManager] Checkpoint saved at {respawnPosition} " +
                   $"(respawn if Y < {checkpointY - fallBuffer:F1})");
     }
