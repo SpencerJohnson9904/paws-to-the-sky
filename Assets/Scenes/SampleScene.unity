@@ -5599,6 +5599,7 @@ GameObject:
   - component: {fileID: 1108058993}
   - component: {fileID: 1108058992}
   - component: {fileID: 1108058995}
+  - component: {fileID: 919132148263715025}
   m_Layer: 0
   m_Name: catParent
   m_TagString: Player
@@ -5606,6 +5607,37 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &919132148263715025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148263715024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e2aa64c5aa344171bdd52eedb25a3f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatPose
+  head: {fileID: 8666712500365861615}
+  headSpread: {x: -30, y: 0, z: 0}
+  leftUpLeg: {fileID: 2186295413884150419}
+  rightUpLeg: {fileID: 8735448970642302950}
+  spine: {fileID: 8767671836069173458}
+  tail: {fileID: 1607839230864955678}
+  leftLegSpread: {x: 0, y: 0, z: -45}
+  rightLegSpread: {x: 0, y: 0, z: 45}
+  spineSpread: {x: -20, y: 0, z: 0}
+  tailSpread: {x: 40, y: 0, z: 0}
+  leftShoulder: {fileID: 4042972885497778313}
+  rightShoulder: {fileID: 1519491281388682904}
+  leftArm: {fileID: 6628915070548108572}
+  rightArm: {fileID: 1034834708576597674}
+  leftShoulderSpread: {x: 0, y: 0, z: -45}
+  rightShoulderSpread: {x: 0, y: 0, z: 45}
+  leftArmSpread: {x: 0, y: 0, z: -20}
+  rightArmSpread: {x: 0, y: 0, z: 20}
+  poseSpeed: 5
 --- !u!1 &985510754105351600
 GameObject:
   m_ObjectHideFlags: 0
