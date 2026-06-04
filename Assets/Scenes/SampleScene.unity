@@ -1253,7 +1253,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 556544348}
   m_SourcePrefab: {fileID: 100100000, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
 --- !u!4 &556544343 stripped
 Transform:
@@ -1265,6 +1268,24 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
   m_PrefabInstance: {fileID: 556544342}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &556544348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 556544344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e587909d143b408fa70e692d9d6338f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
+  respawnPoint: {fileID: 0}
+  spawnHeightOffset: 1.5
+  triggerRadius: 1
+  indicatorRenderers: []
+  inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
 --- !u!1001 &571450363
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2796,7 +2817,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1128885820}
   m_SourcePrefab: {fileID: 100100000, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
 --- !u!4 &1128885815 stripped
 Transform:
@@ -2808,6 +2832,24 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
   m_PrefabInstance: {fileID: 1128885814}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1128885820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1128885816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e587909d143b408fa70e692d9d6338f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
+  respawnPoint: {fileID: 0}
+  spawnHeightOffset: 1.5
+  triggerRadius: 1
+  indicatorRenderers: []
+  inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
 --- !u!1001 &1207830438
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2990,10 +3032,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7598010778777186093, guid: 696054cd3122fd4408591593623f7f19, type: 3}
       insertIndex: -1
       addedObject: {fileID: 556544343}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8062224495308751662, guid: 696054cd3122fd4408591593623f7f19, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1277783617}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 696054cd3122fd4408591593623f7f19, type: 3}
 --- !u!4 &1277783615 stripped
 Transform:
@@ -3005,24 +3044,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8062224495308751662, guid: 696054cd3122fd4408591593623f7f19, type: 3}
   m_PrefabInstance: {fileID: 1277783614}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1277783617
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1277783616}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e587909d143b408fa70e692d9d6338f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
-  respawnPoint: {fileID: 0}
-  spawnHeightOffset: 1.5
-  triggerRadius: 2
-  indicatorRenderers: []
-  inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
-  activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
 --- !u!1 &1315144260
 GameObject:
   m_ObjectHideFlags: 0
@@ -3235,7 +3256,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5691240492763391568, guid: a1d346d8e49157640a865618f141d10e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.6071544
+      value: 3.59
       objectReference: {fileID: 0}
     - target: {fileID: 5691240492763391568, guid: a1d346d8e49157640a865618f141d10e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3275,10 +3296,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5691240492763391568, guid: a1d346d8e49157640a865618f141d10e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1810026607}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1048603564969598889, guid: a1d346d8e49157640a865618f141d10e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1400361969}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a1d346d8e49157640a865618f141d10e, type: 3}
 --- !u!4 &1400361967 stripped
 Transform:
@@ -3290,24 +3308,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1048603564969598889, guid: a1d346d8e49157640a865618f141d10e, type: 3}
   m_PrefabInstance: {fileID: 1400361966}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1400361969
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1400361968}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e587909d143b408fa70e692d9d6338f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
-  respawnPoint: {fileID: 0}
-  spawnHeightOffset: 1.5
-  triggerRadius: 2
-  indicatorRenderers: []
-  inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
-  activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
 --- !u!1001 &1405824033
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3482,7 +3482,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  triggerRadius: 2
+  triggerRadius: 1.2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
@@ -3662,10 +3662,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1785593545046764365, guid: 394840af8bfafcd40ab658ebd549b96d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1128885815}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3711785721855332173, guid: 394840af8bfafcd40ab658ebd549b96d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1506721739}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 394840af8bfafcd40ab658ebd549b96d, type: 3}
 --- !u!4 &1506721737 stripped
 Transform:
@@ -3677,24 +3674,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3711785721855332173, guid: 394840af8bfafcd40ab658ebd549b96d, type: 3}
   m_PrefabInstance: {fileID: 1506721736}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1506721739
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1506721738}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e587909d143b408fa70e692d9d6338f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
-  respawnPoint: {fileID: 0}
-  spawnHeightOffset: 1.5
-  triggerRadius: 2
-  indicatorRenderers: []
-  inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
-  activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
 --- !u!1001 &1524058067
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4386,7 +4365,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1810026612}
   m_SourcePrefab: {fileID: 100100000, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
 --- !u!4 &1810026607 stripped
 Transform:
@@ -4398,6 +4380,24 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3939813719571721216, guid: 1400301ed26c91f44a959a300e3e18b3, type: 3}
   m_PrefabInstance: {fileID: 1810026606}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1810026612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1810026608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e587909d143b408fa70e692d9d6338f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
+  respawnPoint: {fileID: 0}
+  spawnHeightOffset: 1.5
+  triggerRadius: 1
+  indicatorRenderers: []
+  inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  activeColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
 --- !u!1001 &1823043167
 PrefabInstance:
   m_ObjectHideFlags: 0

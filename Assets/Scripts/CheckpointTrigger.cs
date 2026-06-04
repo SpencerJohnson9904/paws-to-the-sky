@@ -36,7 +36,7 @@ public class CheckpointTrigger : MonoBehaviour
     [Header("Trigger Zone")]
     [Tooltip("Radius of the invisible sphere that detects the player. " +
              "Resize to cover the platform comfortably.")]
-    [SerializeField] float triggerRadius = 3f;
+    [SerializeField] float triggerRadius = 1f;
 
     [Header("Visual Feedback")]
     [Tooltip("Renderers whose material colour changes when the checkpoint activates.")]
