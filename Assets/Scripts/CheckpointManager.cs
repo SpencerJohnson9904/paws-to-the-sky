@@ -37,8 +37,9 @@ public class CheckpointManager : MonoBehaviour
     [SerializeField] CheckpointNotification notification;
 
     // ── Private state ─────────────────────────────────────────────────────────
-    Vector3 currentRespawnPos;   // position to teleport back to
-    float   checkpointY;         // Y of the last activated checkpoint — fall threshold
+    Vector3    currentRespawnPos;  // position to teleport back to
+    Quaternion currentRespawnRot;  // facing direction when checkpoint was first reached
+    float      checkpointY;        // Y of the last activated checkpoint — fall threshold
     Rigidbody playerRb;
     bool isRespawning;           // one-frame guard against re-triggering
 
@@ -67,6 +68,9 @@ public class CheckpointManager : MonoBehaviour
         currentRespawnPos = defaultSpawnPoint != null
             ? defaultSpawnPoint.position
             : player.position;
+        currentRespawnRot = defaultSpawnPoint != null
+            ? defaultSpawnPoint.rotation
+            : player.rotation;
 
         checkpointY = currentRespawnPos.y;
     }
@@ -96,16 +100,25 @@ public class CheckpointManager : MonoBehaviour
     /// Only saves the checkpoint if it is HIGHER than the current one —
     /// falling back onto a lower platform never downgrades progress.
     /// </summary>
-    public void SetCheckpoint(Vector3 respawnPosition)
+    public void SetCheckpoint(Vector3 respawnPosition, Quaternion respawnRotation)
     {
         // Never go backwards — only save higher checkpoints
         if (respawnPosition.y < checkpointY) return;
 
         currentRespawnPos = respawnPosition;
+        currentRespawnRot = respawnRotation;
         checkpointY       = respawnPosition.y;
         notification?.Show();
         Debug.Log($"[CheckpointManager] Checkpoint saved at {respawnPosition} " +
                   $"(respawn if Y < {checkpointY - fallBuffer:F1})");
+    }
+
+    /// <summary>
+    /// Updates the saved facing rotation for the current checkpoint (called once the player lands).
+    /// </summary>
+    public void UpdateCheckpointRotation(Quaternion rotation)
+    {
+        currentRespawnRot = rotation;
     }
 
     /// <summary>
@@ -138,6 +151,7 @@ public class CheckpointManager : MonoBehaviour
 
         // Teleport
         player.position = position;
+        player.rotation = currentRespawnRot;
 
         // Reset the movement state machine so the player can aim immediately
         var pm = player.GetComponent<PlayerMovement>();
