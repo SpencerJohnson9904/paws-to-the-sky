@@ -29,6 +29,8 @@ public class cameraFollow : MonoBehaviour
     bool dragging;
     // Cached so we can unsubscribe; may be null if the cat has no PlayerMovement.
     PlayerMovement playerMovement;
+    // Below this (degrees) the remaining offset is imperceptible, so we snap to zero.
+    const float RecenterSnapThreshold = 0.05f;
 
     [Header("Occlusion")]
     [Tooltip("Objects between the camera and the cat on these layers get hidden so they never block the view.")]
@@ -51,11 +53,17 @@ public class cameraFollow : MonoBehaviour
 
     void OnEnable()
     {
+        // cat is an inspector field, populated before OnEnable in normal play. If
+        // it is left unset, free-look still works but never auto-recenters.
         if (cat == null) return;
 
         playerMovement = cat.GetComponent<PlayerMovement>();
         if (playerMovement != null)
+        {
+            // Unsubscribe first so repeated enable/disable can't double-subscribe.
+            playerMovement.JumpDirectionLocked -= OnJumpDirectionLocked;
             playerMovement.JumpDirectionLocked += OnJumpDirectionLocked;
+        }
     }
 
     void OnJumpDirectionLocked()
@@ -88,7 +96,7 @@ public class cameraFollow : MonoBehaviour
         {
             yawOffset = FreeLookMath.StepRecenter(yawOffset, recenterSpeed, Time.deltaTime);
             pitchOffset = FreeLookMath.StepRecenter(pitchOffset, recenterSpeed, Time.deltaTime);
-            if (Mathf.Abs(yawOffset) < 0.05f && Mathf.Abs(pitchOffset) < 0.05f)
+            if (Mathf.Abs(yawOffset) < RecenterSnapThreshold && Mathf.Abs(pitchOffset) < RecenterSnapThreshold)
             {
                 yawOffset = 0f;
                 pitchOffset = 0f;
@@ -134,6 +142,8 @@ public class cameraFollow : MonoBehaviour
 
         if (dragging && mouse.rightButton.isPressed)
         {
+            // Read in LateUpdate so look + position update in one pass; mouse.delta
+            // accumulates over the whole frame, so reading it here loses no input.
             Vector2 delta = mouse.delta.ReadValue();
             Vector2 offsets = FreeLookMath.ApplyLookDelta(
                 new Vector2(yawOffset, pitchOffset), delta,
@@ -151,7 +161,7 @@ public class cameraFollow : MonoBehaviour
     {
         dragging = true;
         recentering = false;
-        // Pen the cursor inside the window but keep it visible (locked, not hidden).
+        // Confine the cursor to the window but keep it visible (locked, not hidden).
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
     }
@@ -160,6 +170,13 @@ public class cameraFollow : MonoBehaviour
     {
         dragging = false;
         Cursor.lockState = CursorLockMode.None;
+    }
+
+    void OnApplicationFocus(bool hasFocus)
+    {
+        // If the window loses focus mid-drag (e.g. alt-tab), the button-up event
+        // may never arrive, so release the cursor here to avoid leaving it confined.
+        if (!hasFocus && dragging) EndDrag();
     }
 
     void UpdateOcclusion()
