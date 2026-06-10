@@ -35,4 +35,13 @@ public static class FreeLookMath
         Quaternion pitched = yawed * Quaternion.AngleAxis(pitchOffset, Vector3.right);
         return pitched * Quaternion.Euler(tiltAngle, 0f, 0f);
     }
+
+    /// <summary>
+    /// Ease an offset toward zero by a frame-rate-independent factor. Mirrors
+    /// the cameraFollow lerp idiom (Time.deltaTime * speed), clamped to [0,1].
+    /// </summary>
+    public static float StepRecenter(float offset, float recenterSpeed, float deltaTime)
+    {
+        return Mathf.Lerp(offset, 0f, Mathf.Clamp01(deltaTime * recenterSpeed));
+    }
 }

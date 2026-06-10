@@ -67,4 +67,28 @@ public class FreeLookMathTests
         Vector3 fwd = rot * Vector3.forward;
         Assert.Less(fwd.y, 0f);
     }
+
+    [Test]
+    public void StepRecenter_HalvesTowardZero_AtHalfFactor()
+    {
+        // factor = clamp01(0.1 * 5) = 0.5 -> lerp(100, 0, 0.5) = 50.
+        float result = FreeLookMath.StepRecenter(100f, recenterSpeed: 5f, deltaTime: 0.1f);
+        Assert.AreEqual(50f, result, 0.0001f);
+    }
+
+    [Test]
+    public void StepRecenter_ReachesZero_WhenFactorClampsToOne()
+    {
+        // factor = clamp01(1 * 100) = 1 -> lerp(100, 0, 1) = 0.
+        float result = FreeLookMath.StepRecenter(100f, recenterSpeed: 100f, deltaTime: 1f);
+        Assert.AreEqual(0f, result, 0.0001f);
+    }
+
+    [Test]
+    public void StepRecenter_MovesTowardZero_FromNegative()
+    {
+        float result = FreeLookMath.StepRecenter(-80f, recenterSpeed: 5f, deltaTime: 0.1f);
+        Assert.Greater(result, -80f);
+        Assert.Less(result, 0f);
+    }
 }
