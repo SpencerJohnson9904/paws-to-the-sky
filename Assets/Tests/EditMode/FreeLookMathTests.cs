@@ -71,6 +71,19 @@ public class FreeLookMathTests
     }
 
     [Test]
+    public void OrbitRotation_Yaw90_OrbitsAboutWorldUp_RegardlessOfCatFacing()
+    {
+        // Cat faces world +X. A 90-deg yaw orbits about world up, so the look
+        // direction must swing to world -Z (back) — confirming yaw is applied
+        // about world up, not the cat's local axes.
+        Quaternion rot = FreeLookMath.OrbitRotation(
+            Vector3.right, yawOffset: 90f, pitchOffset: 0f, tiltAngle: 0f);
+
+        Vector3 fwd = rot * Vector3.forward;
+        Assert.Less(Vector3.Distance(fwd, Vector3.back), 0.001f);
+    }
+
+    [Test]
     public void OrbitRotation_PositivePitch_LooksDownward()
     {
         Quaternion rot = FreeLookMath.OrbitRotation(
