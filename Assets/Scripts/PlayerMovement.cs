@@ -64,6 +64,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (!GameOptions.GameStarted) return;
+
         var space = Keyboard.current?.spaceKey;
         if (space == null) return;
 

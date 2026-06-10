@@ -36,10 +36,21 @@ public class CheckpointManager : MonoBehaviour
     [Tooltip("Assign the CheckpointNotification component on your Canvas.")]
     [SerializeField] CheckpointNotification notification;
 
+    [Header("Play Again")]
+    [Tooltip("The cat's Renderer. The Victory Material is applied to this when the " +
+             "player restarts after winning.")]
+    [SerializeField] Renderer catRenderer;
+
+    [Tooltip("Material applied to the cat after winning and choosing Play Again. " +
+             "Leave empty to keep the cat's normal look on replay.")]
+    [SerializeField] Material victoryMaterial;
+
     // ── Private state ─────────────────────────────────────────────────────────
     Vector3    currentRespawnPos;  // position to teleport back to
     Quaternion currentRespawnRot;  // facing direction when checkpoint was first reached
     float      checkpointY;        // Y of the last activated checkpoint — fall threshold
+    Vector3    initialSpawnPos;    // level start — where Play Again returns the player
+    Quaternion initialSpawnRot;
     Rigidbody playerRb;
     bool isRespawning;           // one-frame guard against re-triggering
 
@@ -73,13 +84,18 @@ public class CheckpointManager : MonoBehaviour
             : player.rotation;
 
         checkpointY = currentRespawnPos.y;
+
+        // Remember the level start so Play Again can return here later.
+        initialSpawnPos = currentRespawnPos;
+        initialSpawnRot = currentRespawnRot;
     }
 
     void Update()
     {
+        if (!GameOptions.GameStarted) return;
         if (player == null || isRespawning) return;
 
-        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        if (CheckpointsEnabled && Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             Respawn();
 
         // Respawn when the player falls below (last checkpoint Y - buffer)
@@ -95,6 +111,8 @@ public class CheckpointManager : MonoBehaviour
     /// </summary>
     public Transform Player => player;
 
+    public bool CheckpointsEnabled => GameOptions.CheckpointsEnabled;
+
     /// <summary>
     /// Called by CheckpointTrigger when the player activates a checkpoint.
     /// Only saves the checkpoint if it is HIGHER than the current one —
@@ -102,6 +120,8 @@ public class CheckpointManager : MonoBehaviour
     /// </summary>
     public void SetCheckpoint(Vector3 respawnPosition, Quaternion respawnRotation)
     {
+        if (!CheckpointsEnabled) return;
+
         // Never go backwards — only save higher checkpoints
         if (respawnPosition.y < checkpointY) return;
 
@@ -174,5 +194,33 @@ public class CheckpointManager : MonoBehaviour
         TeleportTo(spawnPos);
         Debug.Log($"[CheckpointManager] Debug jump to {spawnPos} " +
                   $"(now the active respawn).");
+    }
+
+    /// <summary>
+    /// Restart the run in place after the player wins. Returns the player to the
+    /// level start, resets the respawn point and fall threshold, re-arms every
+    /// checkpoint and win zone so a replay works, and applies the victory material
+    /// to the cat. Called by WinScreen.PlayAgain().
+    /// </summary>
+    public void RestartGame()
+    {
+        // Reset progress back to the level start.
+        currentRespawnPos = initialSpawnPos;
+        currentRespawnRot = initialSpawnRot;
+        checkpointY       = initialSpawnPos.y;
+        TeleportTo(initialSpawnPos);
+
+        // Re-arm checkpoints and the win zone — their activated/won flags would
+        // otherwise block them from firing again on the replay.
+        foreach (var cp in FindObjectsByType<CheckpointTrigger>(FindObjectsSortMode.None))
+            cp.ResetCheckpoint();
+        foreach (var wz in FindObjectsByType<WinTrigger>(FindObjectsSortMode.None))
+            wz.ResetWin();
+
+        // Give the cat its victory look for the next run.
+        if (catRenderer != null && victoryMaterial != null)
+            catRenderer.material = victoryMaterial;
+
+        Debug.Log("[CheckpointManager] Game restarted at level start.");
     }
 }
