@@ -19,9 +19,26 @@ public class CheckpointNotification : MonoBehaviour
 
     public void Show()
     {
+        if (!GameOptions.CheckpointsEnabled)
+        {
+            Hide();
+            return;
+        }
+
         if (activeRoutine != null)
             StopCoroutine(activeRoutine);
         activeRoutine = StartCoroutine(ShowRoutine());
+    }
+
+    public void Hide()
+    {
+        if (activeRoutine != null)
+        {
+            StopCoroutine(activeRoutine);
+            activeRoutine = null;
+        }
+
+        SetAlpha(0f);
     }
 
     IEnumerator ShowRoutine()

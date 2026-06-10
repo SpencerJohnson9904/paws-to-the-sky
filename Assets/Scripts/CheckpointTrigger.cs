@@ -100,6 +100,8 @@ public class CheckpointTrigger : MonoBehaviour
             return;
         }
 
+        if (!CheckpointManager.Instance.CheckpointsEnabled) return;
+
         CheckpointManager.Instance.SetCheckpoint(SpawnPosition, other.transform.rotation);
         pendingRotation = true;
     }

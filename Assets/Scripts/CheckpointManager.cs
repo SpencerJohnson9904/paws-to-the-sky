@@ -77,9 +77,10 @@ public class CheckpointManager : MonoBehaviour
 
     void Update()
     {
+        if (!GameOptions.GameStarted) return;
         if (player == null || isRespawning) return;
 
-        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        if (CheckpointsEnabled && Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             Respawn();
 
         // Respawn when the player falls below (last checkpoint Y - buffer)
@@ -95,6 +96,8 @@ public class CheckpointManager : MonoBehaviour
     /// </summary>
     public Transform Player => player;
 
+    public bool CheckpointsEnabled => GameOptions.CheckpointsEnabled;
+
     /// <summary>
     /// Called by CheckpointTrigger when the player activates a checkpoint.
     /// Only saves the checkpoint if it is HIGHER than the current one —
@@ -102,6 +105,8 @@ public class CheckpointManager : MonoBehaviour
     /// </summary>
     public void SetCheckpoint(Vector3 respawnPosition, Quaternion respawnRotation)
     {
+        if (!CheckpointsEnabled) return;
+
         // Never go backwards — only save higher checkpoints
         if (respawnPosition.y < checkpointY) return;
 
