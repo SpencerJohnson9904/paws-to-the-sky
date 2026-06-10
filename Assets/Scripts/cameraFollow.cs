@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class cameraFollow : MonoBehaviour
 {
@@ -8,6 +9,28 @@ public class cameraFollow : MonoBehaviour
     public float height = 2f;
     public float smoothSpeed = 5f;
     public float tiltAngle = 10f;
+
+    [Header("Free Look")]
+    [Tooltip("Hold right mouse and move the mouse to swivel the camera around the cat. Degrees of swivel per unit of mouse delta.")]
+    public float lookSensitivity = 0.2f;
+    [Tooltip("Lowest the free-look can pitch (degrees). Stops the camera flipping under the cat.")]
+    public float pitchMin = -30f;
+    [Tooltip("Highest the free-look can pitch (degrees). Stops the camera flipping over the cat.")]
+    public float pitchMax = 70f;
+    [Tooltip("How fast the swivel eases back behind the cat after a jump direction is locked.")]
+    public float recenterSpeed = 5f;
+
+    // Persistent orbit offset applied on top of the cat-following rotation.
+    float yawOffset;
+    float pitchOffset;
+    // True while we're easing the offsets back to zero after a jump lock.
+    bool recentering;
+    // True while the right mouse button is held for a swivel.
+    bool dragging;
+    // Cached so we can unsubscribe; may be null if the cat has no PlayerMovement.
+    PlayerMovement playerMovement;
+    // Below this (degrees) the remaining offset is imperceptible, so we snap to zero.
+    const float RecenterSnapThreshold = 0.05f;
 
     [Header("Occlusion")]
     [Tooltip("Objects between the camera and the cat on these layers get hidden so they never block the view.")]
@@ -28,6 +51,27 @@ public class cameraFollow : MonoBehaviour
     // things above the cat's head rather than the surface it's standing on.
     float catTopOffset = 1f;
 
+    void OnEnable()
+    {
+        // cat is an inspector field, populated before OnEnable in normal play. If
+        // it is left unset, free-look still works but never auto-recenters.
+        if (cat == null) return;
+
+        playerMovement = cat.GetComponent<PlayerMovement>();
+        if (playerMovement != null)
+        {
+            // Unsubscribe first so repeated enable/disable can't double-subscribe.
+            playerMovement.JumpDirectionLocked -= OnJumpDirectionLocked;
+            playerMovement.JumpDirectionLocked += OnJumpDirectionLocked;
+        }
+    }
+
+    void OnJumpDirectionLocked()
+    {
+        // Ease the free-look back behind the cat for the jump itself.
+        recentering = true;
+    }
+
     void Start()
     {
         if (cat == null) return;
@@ -43,15 +87,30 @@ public class cameraFollow : MonoBehaviour
     }
 
     void LateUpdate()
-{
-    Quaternion targetRotation = Quaternion.LookRotation(cat.forward);
-    targetRotation *= Quaternion.Euler(tiltAngle, 0, 0);
-    transform.rotation = Quaternion.Slerp(
-        transform.rotation,
-        targetRotation,
-        Time.deltaTime * smoothSpeed
-    );
+    {
+        if (cat == null) return;
 
+        HandleFreeLookInput();
+
+        if (recentering)
+        {
+            yawOffset = FreeLookMath.StepRecenter(yawOffset, recenterSpeed, Time.deltaTime);
+            pitchOffset = FreeLookMath.StepRecenter(pitchOffset, recenterSpeed, Time.deltaTime);
+            if (Mathf.Abs(yawOffset) < RecenterSnapThreshold && Mathf.Abs(pitchOffset) < RecenterSnapThreshold)
+            {
+                yawOffset = 0f;
+                pitchOffset = 0f;
+                recentering = false;
+            }
+        }
+
+        Quaternion targetRotation =
+            FreeLookMath.OrbitRotation(cat.forward, yawOffset, pitchOffset, tiltAngle);
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRotation,
+            Time.deltaTime * smoothSpeed
+        );
 
         Vector3 desiredPosition = cat.position
             - transform.forward * distance
@@ -63,9 +122,61 @@ public class cameraFollow : MonoBehaviour
             Time.deltaTime * smoothSpeed
         );
 
-        //transform.LookAt(cat.position + Vector3.up * 1f);
-
         UpdateOcclusion();
+    }
+
+    void HandleFreeLookInput()
+    {
+        var mouse = Mouse.current;
+        if (mouse == null) return;
+
+        // Don't allow swivel before the game has started.
+        if (!GameOptions.GameStarted)
+        {
+            if (dragging) EndDrag();
+            return;
+        }
+
+        if (mouse.rightButton.wasPressedThisFrame)
+            BeginDrag();
+
+        if (dragging && mouse.rightButton.isPressed)
+        {
+            // Read in LateUpdate so look + position update in one pass; mouse.delta
+            // accumulates over the whole frame, so reading it here loses no input.
+            Vector2 delta = mouse.delta.ReadValue();
+            Vector2 offsets = FreeLookMath.ApplyLookDelta(
+                new Vector2(yawOffset, pitchOffset), delta,
+                lookSensitivity, pitchMin, pitchMax);
+            yawOffset = offsets.x;
+            pitchOffset = offsets.y;
+            recentering = false; // The player has taken manual control.
+        }
+
+        if (mouse.rightButton.wasReleasedThisFrame)
+            EndDrag();
+    }
+
+    void BeginDrag()
+    {
+        dragging = true;
+        recentering = false;
+        // Confine the cursor to the window but keep it visible (locked, not hidden).
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.visible = true;
+    }
+
+    void EndDrag()
+    {
+        dragging = false;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    void OnApplicationFocus(bool hasFocus)
+    {
+        // If the window loses focus mid-drag (e.g. alt-tab), the button-up event
+        // may never arrive, so release the cursor here to avoid leaving it confined.
+        if (!hasFocus && dragging) EndDrag();
     }
 
     void UpdateOcclusion()
@@ -120,5 +231,11 @@ public class cameraFollow : MonoBehaviour
         foreach (var r in hidden)
             if (r != null) r.enabled = true;
         hidden.Clear();
+
+        if (playerMovement != null)
+            playerMovement.JumpDirectionLocked -= OnJumpDirectionLocked;
+
+        // Never leave the cursor confined if we're torn down mid-drag.
+        if (dragging) EndDrag();
     }
 }
