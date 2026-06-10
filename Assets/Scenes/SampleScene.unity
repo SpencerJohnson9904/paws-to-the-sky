@@ -4256,9 +4256,9 @@ MonoBehaviour:
   visualModel: {fileID: 543450652451723882}
   aimSweepAngle: 180
   aimSweepSpeed: 1
-  minVerticalJumpForce: 3
+  minVerticalJumpForce: 2
   maxVerticalJumpForce: 9
-  minHorizontalJumpForce: 2
+  minHorizontalJumpForce: 1
   maxHorizontalJumpForce: 8
   maxChargeTime: 1.5
   squishTarget: {fileID: 2130252211}
