@@ -4400,6 +4400,7 @@ MonoBehaviour:
   resetButtonRoot: {fileID: 1884263438}
   checkpointButtonLabel: {fileID: 1353989278}
   pauseGameUntilStart: 1
+  flyingCar: {fileID: 0}
 --- !u!1001 &1255739413
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5215,7 +5216,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.33999908}
-  m_LocalScale: {x: 7.6472406, y: 1, z: 7.0003953}
+  m_LocalScale: {x: 75, y: 1, z: 75}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -6612,6 +6613,7 @@ MonoBehaviour:
   speed: 60
   knockbackForce: 8
   knockbackUpward: 4
+  engineSound: {fileID: 0}
 --- !u!82 &1876909551
 AudioSource:
   m_ObjectHideFlags: 0
