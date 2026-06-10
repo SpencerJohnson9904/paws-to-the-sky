@@ -1759,6 +1759,10 @@ MonoBehaviour:
   height: 3
   smoothSpeed: 5
   tiltAngle: 30
+  lookSensitivity: 0.2
+  pitchMin: -30
+  pitchMax: 70
+  recenterSpeed: 5
   occlusionMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -8581,7 +8585,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  respawnEulerRotation: {x: 0, y: 0, z: 0}
+  respawnEulerRotation: {x: 0, y: 140, z: 0}
   triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
