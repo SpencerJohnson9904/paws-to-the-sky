@@ -42,6 +42,13 @@ public class PlayerMovement : MonoBehaviour
     public float ChargeFraction => Mathf.Clamp01(chargeTime / maxChargeTime);
     public bool IsGrounded => grounded;
 
+    /// <summary>
+    /// Raised the moment the player locks in a jump direction (first Space press,
+    /// Aiming -> Locked). The free-look camera listens to this to ease back
+    /// behind the cat. Does not affect gameplay or the cat's rotation.
+    /// </summary>
+    public event System.Action JumpDirectionLocked;
+
     //debug
     void Start()
     {
@@ -79,6 +86,7 @@ public class PlayerMovement : MonoBehaviour
                     transform.Rotate(0f, currentYaw, 0f);
                     if (aimArrow != null) aimArrow.localRotation = Quaternion.identity;
                     state = AimState.Locked;
+                    JumpDirectionLocked?.Invoke();
                 }
                 break;
 
