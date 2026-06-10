@@ -5589,7 +5589,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  respawnEulerRotation: {x: 0, y: 0, z: 0}
+  respawnEulerRotation: {x: 0, y: 220, z: 0}
   triggerRadius: 1.2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
@@ -7044,7 +7044,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  respawnEulerRotation: {x: 0, y: 0, z: 0}
+  respawnEulerRotation: {x: 0, y: 210, z: 0}
   triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
@@ -7986,7 +7986,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
-  respawnEulerRotation: {x: 0, y: 0, z: 0}
+  respawnEulerRotation: {x: 0, y: 270, z: 0}
   triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
@@ -8564,13 +8564,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2062989394}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.9396926, z: 0, w: 0.34202015}
   m_LocalPosition: {x: -0.3296378, y: 0, z: -7.103053}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 140, z: 0}
 --- !u!114 &2062989399
 MonoBehaviour:
   m_ObjectHideFlags: 0
