@@ -29,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip squishSound;
     [SerializeField] AudioClip jumpSound;
+    [SerializeField] AudioClip landSound;
 
     Rigidbody rb;
     AimState state = AimState.Aiming;
@@ -186,6 +187,17 @@ public class PlayerMovement : MonoBehaviour
             if (contact.normal.y > 0.5f)
             {
                 grounded = true;
+                return;
+            }
+        }
+    }
+    void OnCollisionEnter(Collision collision)
+    {
+        foreach (var contact in collision.contacts)
+        {
+            if (contact.normal.y > 0.5f && leftGroundSinceJump)
+            {
+                if (landSound) audioSource.PlayOneShot(landSound);
                 return;
             }
         }
