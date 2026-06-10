@@ -25,6 +25,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float squishAmount = 0.3f;
     [SerializeField] float squishSpeed = 8f;
 
+    [Header("Audio")]
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip squishSound;
+    [SerializeField] AudioClip jumpSound;
+
     Rigidbody rb;
     AimState state = AimState.Aiming;
     float chargeTime;
@@ -39,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
     //debug
     void Start()
     {
+
         if (squishTarget != null)
             squishOriginalScale = squishTarget.localScale;
     }
@@ -78,6 +84,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     state = AimState.Charging;
                     chargeTime = 0f;
+                    if (squishSound) audioSource.PlayOneShot(squishSound);
                 }
                 break;
 
@@ -86,7 +93,7 @@ public class PlayerMovement : MonoBehaviour
                 chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
                 if (space.wasReleasedThisFrame)
                 {
-                    StopAllCoroutines();
+                    if (jumpSound) audioSource.PlayOneShot(jumpSound);
                     Jump(ChargeFraction);
                     state = AimState.Airborne;
                     leftGroundSinceJump = false;
@@ -107,6 +114,7 @@ public class PlayerMovement : MonoBehaviour
                     if (aimArrow != null) aimArrow.gameObject.SetActive(true);
                 }
                 break;
+
         }
     }
 
