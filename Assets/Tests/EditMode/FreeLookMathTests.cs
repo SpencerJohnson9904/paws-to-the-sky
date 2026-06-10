@@ -35,4 +35,36 @@ public class FreeLookMathTests
         // pitch = 0 - 1000 = -1000 -> clamped to -30.
         Assert.AreEqual(-30f, result.y, 0.0001f);
     }
+
+    [Test]
+    public void OrbitRotation_ZeroOffsets_FacesCatForward()
+    {
+        Quaternion rot = FreeLookMath.OrbitRotation(
+            Vector3.forward, yawOffset: 0f, pitchOffset: 0f, tiltAngle: 0f);
+
+        Vector3 fwd = rot * Vector3.forward;
+        Assert.Less(Vector3.Distance(fwd, Vector3.forward), 0.001f);
+    }
+
+    [Test]
+    public void OrbitRotation_Yaw90_LooksAlongRight()
+    {
+        Quaternion rot = FreeLookMath.OrbitRotation(
+            Vector3.forward, yawOffset: 90f, pitchOffset: 0f, tiltAngle: 0f);
+
+        // +90 about world up takes +Z to +X.
+        Vector3 fwd = rot * Vector3.forward;
+        Assert.Less(Vector3.Distance(fwd, Vector3.right), 0.001f);
+    }
+
+    [Test]
+    public void OrbitRotation_PositivePitch_LooksDownward()
+    {
+        Quaternion rot = FreeLookMath.OrbitRotation(
+            Vector3.forward, yawOffset: 0f, pitchOffset: 30f, tiltAngle: 0f);
+
+        // Positive pitch about local right tilts the look downward (negative Y).
+        Vector3 fwd = rot * Vector3.forward;
+        Assert.Less(fwd.y, 0f);
+    }
 }

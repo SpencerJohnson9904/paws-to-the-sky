@@ -21,4 +21,18 @@ public static class FreeLookMath
             currentOffsets.y - mouseDelta.y * sensitivity, pitchMin, pitchMax);
         return new Vector2(yaw, pitch);
     }
+
+    /// <summary>
+    /// Target camera rotation: orbit the cat's forward by yaw (about world up)
+    /// and pitch (about the yawed local right), then apply the fixed downward
+    /// tilt. Matches the rotation convention of the original follow camera.
+    /// </summary>
+    public static Quaternion OrbitRotation(
+        Vector3 catForward, float yawOffset, float pitchOffset, float tiltAngle)
+    {
+        Quaternion baseRot = Quaternion.LookRotation(catForward);
+        Quaternion yawed = Quaternion.AngleAxis(yawOffset, Vector3.up) * baseRot;
+        Quaternion pitched = yawed * Quaternion.AngleAxis(pitchOffset, Vector3.right);
+        return pitched * Quaternion.Euler(tiltAngle, 0f, 0f);
+    }
 }
