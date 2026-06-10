@@ -84,7 +84,11 @@ public class PlayerMovement : MonoBehaviour
                 {
                     state = AimState.Charging;
                     chargeTime = 0f;
-                    if (squishSound) audioSource.PlayOneShot(squishSound);
+                    if (squishSound)
+                    {
+                        audioSource.clip = squishSound;
+                        audioSource.Play();
+                    }
                 }
                 break;
 
@@ -93,6 +97,7 @@ public class PlayerMovement : MonoBehaviour
                 chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
                 if (space.wasReleasedThisFrame)
                 {
+                    audioSource.Stop();
                     if (jumpSound) audioSource.PlayOneShot(jumpSound);
                     Jump(ChargeFraction);
                     state = AimState.Airborne;
