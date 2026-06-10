@@ -11,7 +11,27 @@ public class FlyingCar : MonoBehaviour
     [Header("Knockback")]
     [SerializeField] float knockbackForce = 8f;
     [SerializeField] float knockbackUpward = 4f;
+    [SerializeField] AudioClip engineSound;
 
+    void Start()
+    {
+        // don't auto-play anymore
+    }
+
+    public void StartEngineSound()
+    {
+        AudioSource audio = GetComponent<AudioSource>();
+        if (audio != null && engineSound != null)
+        {
+            audio.clip = engineSound;
+            audio.loop = true;
+            audio.spatialBlend = 1f;
+            audio.maxDistance = 20f;
+            audio.rolloffMode = AudioRolloffMode.Linear;
+            audio.Play();
+        }
+    }
+    
     float angle = 0f;
 
     void Update()

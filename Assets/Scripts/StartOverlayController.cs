@@ -7,6 +7,9 @@ public class StartOverlayController : MonoBehaviour
     [SerializeField] GameObject resetButtonRoot;
     [SerializeField] TextMeshProUGUI checkpointButtonLabel;
     [SerializeField] bool pauseGameUntilStart = true;
+    [SerializeField] FlyingCar flyingCar;
+
+ 
 
     void Start()
     {
@@ -32,6 +35,9 @@ public class StartOverlayController : MonoBehaviour
 
         if (overlayPanel != null)
             overlayPanel.SetActive(false);
+
+        if (flyingCar != null)
+            flyingCar.StartEngineSound(); // 👈 add this
 
         RefreshResetButton();
     }
