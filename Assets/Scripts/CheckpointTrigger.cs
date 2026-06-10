@@ -33,6 +33,9 @@ public class CheckpointTrigger : MonoBehaviour
              "Lifts the player above the surface so they don't clip through on respawn.")]
     [SerializeField] float spawnHeightOffset = 1.5f;
 
+    [Tooltip("Player facing rotation after respawning at this checkpoint. Set manually per checkpoint.")]
+    [SerializeField] Vector3 respawnEulerRotation;
+
     [Header("Trigger Zone")]
     [Tooltip("Radius of the invisible sphere that detects the player. " +
              "Resize to cover the platform comfortably.")]
@@ -47,7 +50,6 @@ public class CheckpointTrigger : MonoBehaviour
 
     // ── Private state ─────────────────────────────────────────────────────────
     bool activated;
-    bool pendingRotation;   // position saved, waiting for player to land before saving rotation
     SphereCollider triggerCollider;
 
     // ── Public API ──────────────────────────────────────────────────────────────
@@ -60,6 +62,8 @@ public class CheckpointTrigger : MonoBehaviour
     public Vector3 SpawnPosition => respawnPoint != null
         ? respawnPoint.position
         : transform.position + Vector3.up * spawnHeightOffset;
+
+    public Quaternion SpawnRotation => Quaternion.Euler(respawnEulerRotation);
 
     /// <summary>Display name for this checkpoint (the GameObject's name).</summary>
     public string CheckpointName => gameObject.name;
@@ -102,20 +106,7 @@ public class CheckpointTrigger : MonoBehaviour
 
         if (!CheckpointManager.Instance.CheckpointsEnabled) return;
 
-        CheckpointManager.Instance.SetCheckpoint(SpawnPosition, other.transform.rotation);
-        pendingRotation = true;
-    }
-
-    void OnTriggerStay(Collider other)
-    {
-        if (!pendingRotation) return;
-        if (!other.CompareTag("Player")) return;
-
-        var pm = other.GetComponent<PlayerMovement>();
-        if (pm == null || !pm.IsGrounded) return;
-
-        CheckpointManager.Instance.UpdateCheckpointRotation(other.transform.rotation);
-        pendingRotation = false;
+        CheckpointManager.Instance.SetCheckpoint(SpawnPosition, SpawnRotation);
         activated = true;
         RefreshVisuals();
     }

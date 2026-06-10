@@ -134,14 +134,6 @@ public class CheckpointManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates the saved facing rotation for the current checkpoint (called once the player lands).
-    /// </summary>
-    public void UpdateCheckpointRotation(Quaternion rotation)
-    {
-        currentRespawnRot = rotation;
-    }
-
-    /// <summary>
     /// Teleport the player to the current respawn position and reset movement state.
     /// </summary>
     public void Respawn()

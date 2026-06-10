@@ -154,7 +154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -9, y: -203}
+  m_AnchoredPosition: {x: -9, y: 162}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &69734729
@@ -4037,6 +4037,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 3
+  respawnEulerRotation: {x: 0, y: 0, z: 0}
   triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
@@ -5243,6 +5244,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
+  respawnEulerRotation: {x: 0, y: 238.629, z: 0}
   triggerRadius: 1.2
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
@@ -6553,6 +6555,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
+  respawnEulerRotation: {x: 0, y: 325.804, z: 0}
   triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
@@ -6754,7 +6757,7 @@ MonoBehaviour:
   platform: {fileID: 1054480890}
   radius: 5
   height: 2.4
-  speed: 60
+  speed: 100
   knockbackForce: 8
   knockbackUpward: 4
   engineSound: {fileID: 8300000, guid: a05334e3b626a4743bc2a25d6de4005f, type: 3}
@@ -7357,6 +7360,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
+  respawnEulerRotation: {x: 0, y: 335, z: 0}
   triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
@@ -7955,6 +7959,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheckpointTrigger
   respawnPoint: {fileID: 0}
   spawnHeightOffset: 1.5
+  respawnEulerRotation: {x: 0, y: 130, z: 0}
   triggerRadius: 1
   indicatorRenderers: []
   inactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
