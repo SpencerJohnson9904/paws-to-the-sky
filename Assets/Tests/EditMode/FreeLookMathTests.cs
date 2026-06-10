@@ -37,6 +37,19 @@ public class FreeLookMathTests
     }
 
     [Test]
+    public void ApplyLookDelta_AccumulatesFromNonZeroPitch_StaysClamped()
+    {
+        // Starting near the top of the range, a further upward look (positive
+        // delta.y is subtracted) must not push past pitchMax.
+        Vector2 result = FreeLookMath.ApplyLookDelta(
+            new Vector2(0f, 60f), new Vector2(0f, -50f),
+            sensitivity: 1f, pitchMin: -30f, pitchMax: 70f);
+
+        // pitch = 60 - (-50) = 110 -> clamped to 70.
+        Assert.AreEqual(70f, result.y, 0.0001f);
+    }
+
+    [Test]
     public void OrbitRotation_ZeroOffsets_FacesCatForward()
     {
         Quaternion rot = FreeLookMath.OrbitRotation(
@@ -63,9 +76,10 @@ public class FreeLookMathTests
         Quaternion rot = FreeLookMath.OrbitRotation(
             Vector3.forward, yawOffset: 0f, pitchOffset: 30f, tiltAngle: 0f);
 
-        // Positive pitch about local right tilts the look downward (negative Y).
+        // Positive pitch about local right tilts the look down by exactly 30 deg:
+        // the forward vector's Y component is -sin(30 deg).
         Vector3 fwd = rot * Vector3.forward;
-        Assert.Less(fwd.y, 0f);
+        Assert.AreEqual(-Mathf.Sin(30f * Mathf.Deg2Rad), fwd.y, 0.001f);
     }
 
     [Test]
@@ -87,8 +101,8 @@ public class FreeLookMathTests
     [Test]
     public void StepRecenter_MovesTowardZero_FromNegative()
     {
+        // factor = clamp01(0.1 * 5) = 0.5 -> lerp(-80, 0, 0.5) = -40.
         float result = FreeLookMath.StepRecenter(-80f, recenterSpeed: 5f, deltaTime: 0.1f);
-        Assert.Greater(result, -80f);
-        Assert.Less(result, 0f);
+        Assert.AreEqual(-40f, result, 0.0001f);
     }
 }

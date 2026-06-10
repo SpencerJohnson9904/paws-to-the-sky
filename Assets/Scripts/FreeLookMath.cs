@@ -33,6 +33,9 @@ public static class FreeLookMath
         Quaternion baseRot = Quaternion.LookRotation(catForward);
         Quaternion yawed = Quaternion.AngleAxis(yawOffset, Vector3.up) * baseRot;
         Quaternion pitched = yawed * Quaternion.AngleAxis(pitchOffset, Vector3.right);
+        // Fixed downward tilt, post-multiplied on the same local-right axis as
+        // pitchOffset above (so it's additive). Kept as its own step to mirror
+        // the original cameraFollow rotation convention.
         return pitched * Quaternion.Euler(tiltAngle, 0f, 0f);
     }
 
